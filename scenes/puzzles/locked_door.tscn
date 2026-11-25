@@ -1,0 +1,112 @@
+[gd_scene format=3]
+[ext_resource type="Script" path="res://scripts/systems/locked_door.gd" id="script"]
+
+[sub_resource type="StandardMaterial3D" id="steel"]
+albedo_color = Color(0.15,0.20,0.24,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="rim"]
+albedo_color = Color(0.33,0.42,0.45,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="red"]
+albedo_color = Color(0.93,0.055,0.14,1)
+metallic = 0.56
+roughness = 0.56
+emission_enabled = true
+emission = Color(0.93,0.055,0.14,1)
+emission_energy_multiplier = 2.1
+
+[sub_resource type="BoxMesh" id="leaf"]
+material = SubResource("steel")
+size = Vector3(1.99,3.2,0.38)
+
+[sub_resource type="BoxMesh" id="rib"]
+material = SubResource("rim")
+size = Vector3(1.90,0.085,0.40)
+
+[sub_resource type="BoxMesh" id="frame"]
+material = SubResource("rim")
+size = Vector3(0.16,3.32,0.49)
+
+[sub_resource type="BoxMesh" id="beam"]
+material = SubResource("rim")
+size = Vector3(4.34,0.16,0.49)
+
+[sub_resource type="BoxMesh" id="light"]
+material = SubResource("red")
+size = Vector3(0.10,2.65,0.407)
+
+[sub_resource type="BoxShape3D" id="closed"]
+size = Vector3(4,3.2,0.38)
+
+[sub_resource type="BoxShape3D" id="access"]
+size = Vector3(4.0,3.20,1.10)
+
+[sub_resource type="GDScript" id="inline"]
+script/source = "extends Area3D\nfunc get_interact_prompt(_player: Node = null) -> String:\n\treturn get_parent().get_interact_prompt()\n\nfunc interact(player: Node) -> void:\n\tget_parent().interact(player)\n"
+
+[node name="LockedDoor" type="StaticBody3D" ]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("script")
+
+[node name="DoorCollision" type="CollisionShape3D" parent="." ]
+position = Vector3(0,1.6,0)
+shape = SubResource("closed")
+
+[node name="LeftLeaf" type="MeshInstance3D" parent="." ]
+position = Vector3(-1,1.6,0)
+mesh = SubResource("leaf")
+
+[node name="RightLeaf" type="MeshInstance3D" parent="." ]
+position = Vector3(1,1.6,0)
+mesh = SubResource("leaf")
+
+[node name="HighRib" type="MeshInstance3D" parent="LeftLeaf" ]
+position = Vector3(0,0.84,0)
+mesh = SubResource("rib")
+
+[node name="LowRib" type="MeshInstance3D" parent="LeftLeaf" ]
+position = Vector3(0,-0.84,0)
+mesh = SubResource("rib")
+
+[node name="Status" type="MeshInstance3D" parent="LeftLeaf" ]
+position = Vector3(0.83,0,0)
+mesh = SubResource("light")
+
+[node name="HighRib" type="MeshInstance3D" parent="RightLeaf" ]
+position = Vector3(0,0.84,0)
+mesh = SubResource("rib")
+
+[node name="LowRib" type="MeshInstance3D" parent="RightLeaf" ]
+position = Vector3(0,-0.84,0)
+mesh = SubResource("rib")
+
+[node name="Status" type="MeshInstance3D" parent="RightLeaf" ]
+position = Vector3(-0.83,0,0)
+mesh = SubResource("light")
+
+[node name="LeftFrame" type="MeshInstance3D" parent="." ]
+position = Vector3(-2.08,1.66,0)
+mesh = SubResource("frame")
+
+[node name="RightFrame" type="MeshInstance3D" parent="." ]
+position = Vector3(2.08,1.66,0)
+mesh = SubResource("frame")
+
+[node name="Header" type="MeshInstance3D" parent="." ]
+position = Vector3(0,3.26,0)
+mesh = SubResource("beam")
+
+[node name="InteractArea" type="Area3D" parent="." groups=["interactables"]]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = SubResource("inline")
+
+[node name="AccessShape" type="CollisionShape3D" parent="InteractArea" ]
+position = Vector3(0,1.6,0)
+shape = SubResource("access")

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_stats.gd" id="1_ws"]
+
+[resource]
+script = ExtResource("1_ws")
+weapon_id = "pistol"
+display_name = "Taktik Tabanca"
+slot_index = 1
+is_melee = false
+damage = 20.0
+pellets = 1
+spread_deg = 0.8
+fire_cooldown = 0.2
+reload_duration = 1.1
+magazine_size = 12
+max_reserve = 72
+range_meters = 70.0
+recoil_pitch_deg = 1.6
+recoil_kick = 0.04
+ads_fov_offset = -10.0
+fire_sfx = "sfx_pistol_fire"
+reload_sfx = "sfx_reload"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_stats.gd" id="1_ws"]
+
+[resource]
+script = ExtResource("1_ws")
+weapon_id = "shotgun"
+display_name = "Pompalı Tüfek"
+slot_index = 2
+is_melee = false
+damage = 9.0
+pellets = 7
+spread_deg = 5.5
+fire_cooldown = 0.75
+reload_duration = 1.5
+magazine_size = 6
+max_reserve = 24
+range_meters = 35.0
+recoil_pitch_deg = 4.2
+recoil_kick = 0.12
+ads_fov_offset = -8.0
+fire_sfx = "sfx_shotgun_fire"
+reload_sfx = "sfx_reload"

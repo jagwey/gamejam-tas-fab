@@ -1,0 +1,256 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
+[ext_resource type="Script" path="res://scripts/systems/settings_panel.gd" id="script"]
+
+[node name="SettingsPanel" type="Control" ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = ExtResource("script")
+process_mode = 3
+
+[node name="Shade" type="ColorRect" parent="." ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.012,0.022,0.036,0.98)
+
+[node name="Frame" type="Panel" parent="." ]
+offset_left = 253.0
+offset_top = 42.0
+offset_right = 1027.0
+offset_bottom = 678.0
+mouse_filter = 2
+
+[node name="Accent" type="ColorRect" parent="." ]
+offset_left = 253.0
+offset_top = 42.0
+offset_right = 1027.0
+offset_bottom = 45.0
+mouse_filter = 2
+color = Color(0.33, 0.93, 0.89, 1)
+
+[node name="Heading" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 303.0
+offset_top = 72.0
+offset_right = 903.0
+offset_bottom = 128.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 41
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = "AYARLAR"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="SensitivityLabel" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 304.0
+offset_top = 153.0
+offset_right = 540.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "Mouse Hassasiyeti"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Sensitivity" type="HSlider" parent="." ]
+unique_name_in_owner = true
+offset_left = 543.0
+offset_top = 153.0
+offset_right = 868.0
+offset_bottom = 191.0
+min_value = 0.05
+max_value = 1
+step = 0.01
+
+[node name="SensitivityValue" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 876.0
+offset_top = 153.0
+offset_right = 974.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="FovLabel" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 304.0
+offset_top = 201.0
+offset_right = 540.0
+offset_bottom = 238.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "Görüş Açısı (FOV)"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Fov" type="HSlider" parent="." ]
+unique_name_in_owner = true
+offset_left = 543.0
+offset_top = 201.0
+offset_right = 868.0
+offset_bottom = 239.0
+min_value = 75
+max_value = 120
+step = 1
+
+[node name="FovValue" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 876.0
+offset_top = 201.0
+offset_right = 974.0
+offset_bottom = 238.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MasterLabel" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 304.0
+offset_top = 249.0
+offset_right = 540.0
+offset_bottom = 286.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "Ana Ses"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Master" type="HSlider" parent="." ]
+unique_name_in_owner = true
+offset_left = 543.0
+offset_top = 249.0
+offset_right = 868.0
+offset_bottom = 287.0
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="MasterValue" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 876.0
+offset_top = 249.0
+offset_right = 974.0
+offset_bottom = 286.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="MusicLabel" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 304.0
+offset_top = 297.0
+offset_right = 540.0
+offset_bottom = 334.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "Müzik Sesi"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Music" type="HSlider" parent="." ]
+unique_name_in_owner = true
+offset_left = 543.0
+offset_top = 297.0
+offset_right = 868.0
+offset_bottom = 335.0
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="MusicValue" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 876.0
+offset_top = 297.0
+offset_right = 974.0
+offset_bottom = 334.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="SfxLabel" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 304.0
+offset_top = 345.0
+offset_right = 540.0
+offset_bottom = 382.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+text = "Efekt Sesi"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Sfx" type="HSlider" parent="." ]
+unique_name_in_owner = true
+offset_left = 543.0
+offset_top = 345.0
+offset_right = 868.0
+offset_bottom = 383.0
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="SfxValue" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 876.0
+offset_top = 345.0
+offset_right = 974.0
+offset_bottom = 382.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Fullscreen" type="CheckButton" parent="." ]
+unique_name_in_owner = true
+offset_left = 302.0
+offset_top = 405.0
+offset_right = 976.0
+offset_bottom = 447.0
+text = "Tam Ekran"
+
+[node name="Shake" type="CheckButton" parent="." ]
+unique_name_in_owner = true
+offset_left = 302.0
+offset_top = 454.0
+offset_right = 976.0
+offset_bottom = 496.0
+text = "Kamera Sarsıntısı"
+
+[node name="CRT" type="CheckButton" parent="." ]
+unique_name_in_owner = true
+offset_left = 302.0
+offset_top = 503.0
+offset_right = 976.0
+offset_bottom = 545.0
+text = "CRT / VHS Efekti"
+
+[node name="Back" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 777.0
+offset_top = 595.0
+offset_right = 973.0
+offset_bottom = 644.0
+text = "Geri"

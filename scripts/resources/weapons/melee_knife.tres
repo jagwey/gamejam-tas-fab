@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/weapon_stats.gd" id="1_ws"]
+
+[resource]
+script = ExtResource("1_ws")
+weapon_id = "melee"
+display_name = "Komando Bıçağı"
+slot_index = 3
+is_melee = true
+damage = 30.0
+pellets = 1
+spread_deg = 0.0
+fire_cooldown = 0.42
+reload_duration = 0.0
+magazine_size = 0
+max_reserve = 0
+range_meters = 2.6
+recoil_pitch_deg = 1.0
+recoil_kick = 0.02
+ads_fov_offset = 0.0
+fire_sfx = "sfx_melee_slash"
+reload_sfx = ""

@@ -1,0 +1,123 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
+[ext_resource type="Script" path="res://scripts/systems/main_menu.gd" id="script"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/credits_panel.tscn" id="credits"]
+
+[node name="MainMenu" type="Control" ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="Mat" type="ColorRect" parent="." ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.028, 0.045, 0.062, 1)
+
+[node name="Poster" type="TextureRect" parent="." ]
+unique_name_in_owner = true
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 675.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Seam" type="ColorRect" parent="." ]
+offset_left = 672.0
+offset_top = 0.0
+offset_right = 675.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.97, 0.22, 0.31, 1)
+
+[node name="Trim" type="ColorRect" parent="." ]
+offset_left = 710.0
+offset_top = 72.0
+offset_right = 755.0
+offset_bottom = 77.0
+mouse_filter = 2
+color = Color(0.97, 0.22, 0.31, 1)
+
+[node name="Title" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 710.0
+offset_top = 88.0
+offset_right = 1215.0
+offset_bottom = 248.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 73
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = "BETA\nPROTOCOL"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Subtitle" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 255.0
+offset_right = 1264.0
+offset_bottom = 289.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.63, 0.75, 0.76, 1)
+text = "Tasarım Fabrikası Game Jam — Dikey Kesit"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="NewGame" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 324.0
+offset_right = 1191.0
+offset_bottom = 375.0
+text = "Yeni Oyun"
+
+[node name="Continue" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 389.0
+offset_right = 1191.0
+offset_bottom = 440.0
+text = "Devam Et"
+
+[node name="Settings" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 454.0
+offset_right = 1191.0
+offset_bottom = 505.0
+text = "Ayarlar"
+
+[node name="Credits" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 519.0
+offset_right = 1191.0
+offset_bottom = 570.0
+text = "Geliştirici Ekibi"
+
+[node name="Quit" type="Button" parent="." ]
+unique_name_in_owner = true
+offset_left = 714.0
+offset_top = 584.0
+offset_right = 1191.0
+offset_bottom = 635.0
+text = "Çıkış"
+
+[node name="SettingsPanel" parent="." instance=ExtResource("settings")]
+unique_name_in_owner = true
+visible = false
+
+[node name="CreditsPanel" parent="." instance=ExtResource("credits")]
+unique_name_in_owner = true
+visible = false

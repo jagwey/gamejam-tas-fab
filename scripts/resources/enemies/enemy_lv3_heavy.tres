@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_stats.gd" id="1_es"]
+
+[resource]
+script = ExtResource("1_es")
+enemy_id = "heavy_lv3"
+display_name = "Ağır Paralı Asker"
+level = 3
+max_health = 100.0
+damage = 12.0
+attack_interval = 1.5
+windup_duration = 0.55
+move_speed = 2.8
+patrol_speed = 1.5
+detection_range = 21.0
+attack_range = 15.0
+enemy_type = "heavy_mercenary"
+sprite_prefix = "merc_lv2"
+can_harvest_beta = true
+projectile_spread_deg = 3.5
+tint_color = Color(0.75, 1, 0.8, 1)

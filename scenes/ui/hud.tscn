@@ -1,0 +1,387 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
+[ext_resource type="Script" path="res://scripts/systems/hud_controller.gd" id="script"]
+
+[node name="HUD" type="Control" ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = ExtResource("script")
+mouse_filter = 2
+
+[node name="WeaponSprite" type="TextureRect" parent="." ]
+unique_name_in_owner = true
+offset_left = 483.0
+offset_top = 360.0
+offset_right = 963.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BetaHand" type="TextureRect" parent="." ]
+unique_name_in_owner = true
+offset_left = 267.0
+offset_top = 360.0
+offset_right = 747.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MissionPlate" type="ColorRect" parent="." ]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 438.0
+offset_bottom = 97.0
+mouse_filter = 2
+color = Color(0.017,0.035,0.047,0.88)
+
+[node name="MissionEdge" type="ColorRect" parent="." ]
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 25.0
+offset_bottom = 97.0
+mouse_filter = 2
+color = Color(0.33, 0.93, 0.89, 1)
+
+[node name="Floor" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 36.0
+offset_top = 26.0
+offset_right = 429.0
+offset_bottom = 51.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Objective" type="Label" parent="." ]
+autowrap_mode = 3
+unique_name_in_owner = true
+offset_left = 36.0
+offset_top = 49.0
+offset_right = 429.0
+offset_bottom = 93.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Boss" type="Control" parent="." ]
+unique_name_in_owner = true
+visible = false
+offset_left = 454.0
+offset_top = 21.0
+offset_right = 826.0
+offset_bottom = 82.0
+mouse_filter = 2
+
+[node name="Base" type="ColorRect" parent="Boss" ]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 372.0
+offset_bottom = 55.0
+mouse_filter = 2
+color = Color(0.017,0.035,0.047,0.88)
+
+[node name="BossTitle" type="Label" parent="Boss" ]
+unique_name_in_owner = true
+offset_left = 7.0
+offset_top = 4.0
+offset_right = 365.0
+offset_bottom = 31.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BossHP" type="ProgressBar" parent="Boss" ]
+unique_name_in_owner = true
+offset_left = 10.0
+offset_top = 37.0
+offset_right = 362.0
+offset_bottom = 44.0
+mouse_filter = 2
+show_percentage = false
+
+[node name="Crosshair" type="Control" parent="." ]
+offset_left = 640.0
+offset_top = 360.0
+offset_right = 641.0
+offset_bottom = 361.0
+mouse_filter = 2
+
+[node name="LeftShadow" type="ColorRect" parent="Crosshair" ]
+offset_left = -11.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 2.0
+mouse_filter = 2
+color = Color(0.01,0.02,0.03,0.85)
+
+[node name="Left" type="ColorRect" parent="Crosshair" ]
+offset_left = -10.0
+offset_top = -1.0
+offset_right = -4.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(0.92, 0.95, 0.93, 1)
+
+[node name="RightShadow" type="ColorRect" parent="Crosshair" ]
+offset_left = 3.0
+offset_top = -2.0
+offset_right = 11.0
+offset_bottom = 2.0
+mouse_filter = 2
+color = Color(0.01,0.02,0.03,0.85)
+
+[node name="Right" type="ColorRect" parent="Crosshair" ]
+offset_left = 4.0
+offset_top = -1.0
+offset_right = 10.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(0.92, 0.95, 0.93, 1)
+
+[node name="TopShadow" type="ColorRect" parent="Crosshair" ]
+offset_left = -2.0
+offset_top = -11.0
+offset_right = 2.0
+offset_bottom = -3.0
+mouse_filter = 2
+color = Color(0.01,0.02,0.03,0.85)
+
+[node name="Top" type="ColorRect" parent="Crosshair" ]
+offset_left = -1.0
+offset_top = -10.0
+offset_right = 1.0
+offset_bottom = -4.0
+mouse_filter = 2
+color = Color(0.92, 0.95, 0.93, 1)
+
+[node name="BottomShadow" type="ColorRect" parent="Crosshair" ]
+offset_left = -2.0
+offset_top = 3.0
+offset_right = 2.0
+offset_bottom = 11.0
+mouse_filter = 2
+color = Color(0.01,0.02,0.03,0.85)
+
+[node name="Bottom" type="ColorRect" parent="Crosshair" ]
+offset_left = -1.0
+offset_top = 4.0
+offset_right = 1.0
+offset_bottom = 10.0
+mouse_filter = 2
+color = Color(0.92, 0.95, 0.93, 1)
+
+[node name="Hit" type="Control" parent="." ]
+unique_name_in_owner = true
+visible = false
+offset_left = 640.0
+offset_top = 360.0
+offset_right = 641.0
+offset_bottom = 361.0
+rotation = 0.785398
+mouse_filter = 2
+
+[node name="Left" type="ColorRect" parent="Hit" ]
+offset_left = -18.0
+offset_top = -1.0
+offset_right = -10.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(1,1,1,1)
+
+[node name="Right" type="ColorRect" parent="Hit" ]
+offset_left = 10.0
+offset_top = -1.0
+offset_right = 18.0
+offset_bottom = 1.0
+mouse_filter = 2
+color = Color(1,1,1,1)
+
+[node name="Top" type="ColorRect" parent="Hit" ]
+offset_left = -1.0
+offset_top = -18.0
+offset_right = 1.0
+offset_bottom = -10.0
+mouse_filter = 2
+color = Color(1,1,1,1)
+
+[node name="Bottom" type="ColorRect" parent="Hit" ]
+offset_left = -1.0
+offset_top = 10.0
+offset_right = 1.0
+offset_bottom = 18.0
+mouse_filter = 2
+color = Color(1,1,1,1)
+
+[node name="InteractPrompt" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 240.0
+offset_top = 390.0
+offset_right = 1040.0
+offset_bottom = 426.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 21
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BetaPrompt" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 210.0
+offset_top = 429.0
+offset_right = 1070.0
+offset_bottom = 465.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BetaBar" type="ProgressBar" parent="." ]
+visible = false
+unique_name_in_owner = true
+offset_left = 525.0
+offset_top = 471.0
+offset_right = 755.0
+offset_bottom = 478.0
+mouse_filter = 2
+show_percentage = false
+
+[node name="Vitals" type="ColorRect" parent="." ]
+offset_left = 24.0
+offset_top = 626.0
+offset_right = 274.0
+offset_bottom = 695.0
+mouse_filter = 2
+color = Color(0.017,0.035,0.047,0.88)
+
+[node name="VitalsEdge" type="ColorRect" parent="." ]
+offset_left = 24.0
+offset_top = 626.0
+offset_right = 27.0
+offset_bottom = 695.0
+mouse_filter = 2
+color = Color(0.97, 0.22, 0.31, 1)
+
+[node name="HP" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 40.0
+offset_top = 631.0
+offset_right = 258.0
+offset_bottom = 666.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 23
+text = "100 / 100 HP"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="." ]
+value = 100.0
+unique_name_in_owner = true
+offset_left = 40.0
+offset_top = 678.0
+offset_right = 257.0
+offset_bottom = 685.0
+mouse_filter = 2
+show_percentage = false
+
+[node name="AmmoPlate" type="ColorRect" parent="." ]
+offset_left = 1018.0
+offset_top = 612.0
+offset_right = 1256.0
+offset_bottom = 696.0
+mouse_filter = 2
+color = Color(0.017,0.035,0.047,0.88)
+
+[node name="AmmoEdge" type="ColorRect" parent="." ]
+offset_left = 1253.0
+offset_top = 612.0
+offset_right = 1256.0
+offset_bottom = 696.0
+mouse_filter = 2
+color = Color(0.33, 0.93, 0.89, 1)
+
+[node name="Weapon" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 1025.0
+offset_top = 618.0
+offset_right = 1240.0
+offset_bottom = 646.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = "Taktik Tabanca"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Ammo" type="Label" parent="." ]
+unique_name_in_owner = true
+offset_left = 1025.0
+offset_top = 642.0
+offset_right = 1240.0
+offset_bottom = 687.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 30
+theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+text = "12 / 72"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="Reload" type="Label" parent="." ]
+visible = false
+unique_name_in_owner = true
+offset_left = 971.0
+offset_top = 573.0
+offset_right = 1255.0
+offset_bottom = 608.0
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.01,0.02,0.03,0.9)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = "ŞARJÖR DEĞİŞİYOR"
+horizontal_alignment = 2
+vertical_alignment = 1

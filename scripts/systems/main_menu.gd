@@ -1,0 +1,30 @@
+extends Control
+
+@onready var buttons: Array[Button] = [%NewGame, %Continue, %Settings, %Credits, %Quit]
+
+func _ready() -> void:
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	var art_path: String = "res://assets/portraits/poster_key_art.jpg"
+	if ResourceLoader.exists(art_path):
+		%Poster.texture = load(art_path)
+	%Continue.disabled = not SaveManager.has_save()
+	%NewGame.pressed.connect(GameManager.start_new_game)
+	%Continue.pressed.connect(GameManager.continue_game)
+	%Settings.pressed.connect(_open_panel.bind(%SettingsPanel))
+	%Credits.pressed.connect(_open_panel.bind(%CreditsPanel))
+	%SettingsPanel.closed.connect(_restore_buttons.bind(%Settings))
+	%CreditsPanel.closed.connect(_restore_buttons.bind(%Credits))
+	%Quit.pressed.connect(get_tree().quit)
+	%NewGame.grab_focus()
+	AudioManager.play_music("bgm_menu_cutscene")
+
+func _open_panel(panel: Control) -> void:
+	for button in buttons:
+		button.focus_mode = Control.FOCUS_NONE
+	panel.show()
+
+func _restore_buttons(opener: Button) -> void:
+	for button in buttons:
+		button.focus_mode = Control.FOCUS_ALL
+	opener.grab_focus()

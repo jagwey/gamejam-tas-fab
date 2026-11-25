@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[sub_resource type="GDScript" id="code"]
+script/source = "extends CanvasLayer\nfunc _ready() -> void:\n\tvar path: String = \"res://assets/shaders/crt_vhs.gdshader\"\n\tif ResourceLoader.exists(path):\n\t\tvar effect: ShaderMaterial = ShaderMaterial.new()\n\t\teffect.shader = load(path) as Shader\n\t\t$Screen.material = effect\n\t_sync()\n\tSettingsManager.settings_changed.connect(_sync)\n\nfunc _sync() -> void:\n\tvisible = SettingsManager.crt_enabled\n\t$Screen.visible = $Screen.material != null\n"
+
+[node name="CRTOverlay" type="CanvasLayer" ]
+process_mode = 3
+layer = 100
+script = SubResource("code")
+
+[node name="Screen" type="ColorRect" parent="." ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1,1,1,1)

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EnemyStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_stats.gd" id="1_es"]
+
+[resource]
+script = ExtResource("1_es")
+enemy_id = "guard_lv1"
+display_name = "Güvenlik Görevlisi"
+level = 1
+max_health = 40.0
+damage = 5.0
+attack_interval = 0.9
+windup_duration = 0.32
+move_speed = 3.8
+patrol_speed = 1.8
+detection_range = 18.0
+attack_range = 13.0
+enemy_type = "security_guard"
+sprite_prefix = "guard_lv1"
+can_harvest_beta = true
+projectile_spread_deg = 3.5
+tint_color = Color(1, 1, 1, 1)

@@ -1,0 +1,142 @@
+[gd_scene format=3]
+
+[ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
+[ext_resource type="Script" path="res://scripts/systems/lore_terminal.gd" id="script"]
+
+[sub_resource type="StandardMaterial3D" id="steel"]
+albedo_color = Color(0.15,0.20,0.24,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="rim"]
+albedo_color = Color(0.33,0.42,0.45,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="glow"]
+albedo_color = Color(0.17,0.87,0.80,1)
+metallic = 0.56
+roughness = 0.56
+emission_enabled = true
+emission = Color(0.17,0.87,0.80,1)
+emission_energy_multiplier = 2.1
+
+[sub_resource type="BoxMesh" id="case"]
+material = SubResource("steel")
+size = Vector3(0.95,0.70,0.35)
+
+[sub_resource type="BoxMesh" id="screen"]
+material = SubResource("glow")
+size = Vector3(0.75,0.46,0.36)
+
+[sub_resource type="BoxMesh" id="stem"]
+material = SubResource("rim")
+size = Vector3(0.28,1.00,0.22)
+
+[sub_resource type="BoxMesh" id="base"]
+material = SubResource("steel")
+size = Vector3(0.72,0.11,0.44)
+
+[sub_resource type="BoxShape3D" id="access"]
+size = Vector3(1.18,1.95,0.7)
+
+[sub_resource type="GDScript" id="inline"]
+script/source = "extends Control\nsignal close_requested\nfunc _input(event: InputEvent) -> void:\n\tif is_visible_in_tree() and (event.is_action_pressed(\"pause\") or event.is_action_pressed(\"interact\")):\n\t\tget_viewport().set_input_as_handled()\n\t\tclose_requested.emit()\n"
+
+[node name="LoreTerminal" type="Area3D" groups=["interactables"]]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("script")
+
+[node name="Base" type="MeshInstance3D" parent="." ]
+position = Vector3(0,0.05,0)
+mesh = SubResource("base")
+
+[node name="Stem" type="MeshInstance3D" parent="." ]
+position = Vector3(0,0.55,0)
+mesh = SubResource("stem")
+
+[node name="Housing" type="MeshInstance3D" parent="." ]
+position = Vector3(0,1.38,0)
+mesh = SubResource("case")
+
+[node name="Screen" type="MeshInstance3D" parent="." ]
+position = Vector3(0,1.39,0.012)
+mesh = SubResource("screen")
+
+[node name="Access" type="CollisionShape3D" parent="." ]
+position = Vector3(0,0.98,0)
+shape = SubResource("access")
+
+[node name="Overlay" type="CanvasLayer" parent="." ]
+layer = 20
+process_mode = 3
+
+[node name="Reader" type="Control" parent="Overlay" ]
+unique_name_in_owner = true
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("theme")
+script = SubResource("inline")
+
+[node name="Dim" type="ColorRect" parent="Overlay/Reader" ]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.009,0.024,0.031,0.90)
+
+[node name="Frame" type="Panel" parent="Overlay/Reader" ]
+offset_left = 240.0
+offset_top = 97.0
+offset_right = 1040.0
+offset_bottom = 623.0
+mouse_filter = 2
+
+[node name="Accent" type="ColorRect" parent="Overlay/Reader" ]
+offset_left = 240.0
+offset_top = 97.0
+offset_right = 1040.0
+offset_bottom = 101.0
+mouse_filter = 2
+color = Color(0.33, 0.93, 0.89, 1)
+
+[node name="Title" type="Label" parent="Overlay/Reader" ]
+unique_name_in_owner = true
+offset_left = 290.0
+offset_top = 133.0
+offset_right = 995.0
+offset_bottom = 210.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Overlay/Reader" ]
+unique_name_in_owner = true
+offset_left = 290.0
+offset_top = 233.0
+offset_right = 991.0
+offset_bottom = 506.0
+horizontal_scroll_mode = 0
+
+[node name="Body" type="Label" parent="Overlay/Reader/Scroll" ]
+unique_name_in_owner = true
+size_flags_horizontal = 3
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 23
+
+[node name="Close" type="Button" parent="Overlay/Reader" ]
+unique_name_in_owner = true
+offset_left = 731.0
+offset_top = 540.0
+offset_right = 989.0
+offset_bottom = 587.0
+text = "[E / ESC]  Kapat"

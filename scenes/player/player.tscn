@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/player_controller.gd" id="1_pc"]
+[ext_resource type="Script" path="res://scripts/components/fps_camera.gd" id="2_cam"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="3_hc"]
+[ext_resource type="Script" path="res://scripts/systems/weapon_manager.gd" id="4_wm"]
+[ext_resource type="Script" path="res://scripts/components/beta_device_controller.gd" id="5_beta"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.38
+height = 1.78
+
+[node name="Player" type="CharacterBody3D" groups=["player"]]
+collision_layer = 2
+collision_mask = 1
+floor_snap_length = 0.3
+script = ExtResource("1_pc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.89, 0)
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+script = ExtResource("2_cam")
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+current = true
+near = 0.03
+far = 250.0
+
+[node name="MuzzleLight" type="OmniLight3D" parent="Head/Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.18, -0.16, -0.7)
+light_color = Color(1, 0.78, 0.45, 1)
+light_energy = 0.0
+omni_range = 6.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_hc")
+max_health = 100.0
+current_health = 100.0
+
+[node name="WeaponManager" type="Node" parent="."]
+script = ExtResource("4_wm")
+
+[node name="BetaDeviceController" type="Node" parent="."]
+script = ExtResource("5_beta")

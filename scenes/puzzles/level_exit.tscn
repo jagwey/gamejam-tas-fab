@@ -1,0 +1,65 @@
+[gd_scene format=3]
+[ext_resource type="Script" path="res://scripts/systems/level_exit.gd" id="script"]
+
+[sub_resource type="StandardMaterial3D" id="steel"]
+albedo_color = Color(0.15,0.20,0.24,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="rim"]
+albedo_color = Color(0.33,0.42,0.45,1)
+metallic = 0.56
+roughness = 0.56
+
+[sub_resource type="StandardMaterial3D" id="glow"]
+albedo_color = Color(0.17,0.87,0.80,1)
+metallic = 0.56
+roughness = 0.56
+emission_enabled = true
+emission = Color(0.17,0.87,0.80,1)
+emission_energy_multiplier = 2.1
+
+[sub_resource type="BoxMesh" id="pad"]
+material = SubResource("steel")
+size = Vector3(2.65,0.08,2.3)
+
+[sub_resource type="BoxMesh" id="line"]
+material = SubResource("glow")
+size = Vector3(2.65,0.015,0.08)
+
+[sub_resource type="BoxMesh" id="plate"]
+material = SubResource("rim")
+size = Vector3(0.58,0.82,0.17)
+
+[sub_resource type="BoxMesh" id="button"]
+material = SubResource("glow")
+size = Vector3(0.30,0.39,0.19)
+
+[sub_resource type="BoxShape3D" id="access"]
+size = Vector3(2.8,2.65,2.45)
+
+[node name="LevelExit" type="Area3D" groups=["interactables"]]
+collision_layer = 8
+collision_mask = 0
+monitoring = false
+script = ExtResource("script")
+
+[node name="Platform" type="MeshInstance3D" parent="." ]
+position = Vector3(0,0.04,0)
+mesh = SubResource("pad")
+
+[node name="Threshold" type="MeshInstance3D" parent="." ]
+position = Vector3(0,0.09,1.06)
+mesh = SubResource("line")
+
+[node name="CallPanel" type="MeshInstance3D" parent="." ]
+position = Vector3(0.92,1.45,-1.08)
+mesh = SubResource("plate")
+
+[node name="CallLight" type="MeshInstance3D" parent="." ]
+position = Vector3(0.92,1.45,-1.08)
+mesh = SubResource("button")
+
+[node name="Access" type="CollisionShape3D" parent="." ]
+position = Vector3(0,1.33,0)
+shape = SubResource("access")
