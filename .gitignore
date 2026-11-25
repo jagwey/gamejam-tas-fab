@@ -1,0 +1,9 @@
+# Godot 4+ specific ignores
+.godot/
+*.tmp
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+export_presets.cfg
+builds/
