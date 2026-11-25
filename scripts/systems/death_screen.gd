@@ -9,7 +9,8 @@ func show_death_screen() -> void:
 		return
 	add_to_group("active_game_modal")
 	get_tree().paused = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	show()
 	%Restart.grab_focus()
 

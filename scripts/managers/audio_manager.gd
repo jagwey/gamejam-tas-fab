@@ -12,6 +12,20 @@ var _cache: Dictionary = {}
 var _missing: Dictionary = {}
 var _current_track: String = ""
 var _next_index: int = 0
+var _footstep_flip: bool = false
+
+## Gameplay sound names that map onto the generated WAV set in res://assets/audio/.
+const SOUND_ALIASES: Dictionary = {
+	"sfx_jump": "sfx_footstep_1",
+	"sfx_land": "sfx_footstep_2",
+	"sfx_enemy_hurt": "sfx_enemy_hit",
+	"sfx_pickup": "sfx_puzzle_bar_pass",
+	"sfx_ui_deny": "sfx_empty_click",
+	"sfx_dry_fire": "sfx_empty_click",
+	"sfx_weapon_switch": "sfx_puzzle_move",
+	"sfx_beta_cancel": "sfx_puzzle_move",
+	"sfx_player_die": "sfx_player_hurt",
+}
 
 
 func _ready() -> void:
@@ -28,6 +42,24 @@ func _ready() -> void:
 	_music_player.bus = _bus_or_master("Music")
 	add_child(_music_player)
 	_music_player.finished.connect(_on_music_finished)
+
+
+func _exit_tree() -> void:
+	# Release playbacks/streams so quitting does not leak AudioStreamPlayback instances.
+	release_all()
+
+
+## Stops every player and drops stream references (used on exit and by tests).
+func release_all() -> void:
+	_current_track = ""
+	if _music_player != null:
+		_music_player.stop()
+		_music_player.stream = null
+	for p in _sfx_pool:
+		if is_instance_valid(p):
+			p.stop()
+			p.stream = null
+	_cache.clear()
 
 
 func play_sfx(sfx_name: String, volume_db: float = 0.0, pitch_scale: float = 1.0) -> void:
@@ -84,6 +116,12 @@ func _get_free_player() -> AudioStreamPlayer:
 func _resolve(sound_name: String) -> AudioStream:
 	if sound_name.is_empty():
 		return null
+	if sound_name == "sfx_footstep":
+		# Alternate left/right steps; resolved fresh each call so the flip is never cached away.
+		_footstep_flip = not _footstep_flip
+		return _resolve("sfx_footstep_1" if _footstep_flip else "sfx_footstep_2")
+	if SOUND_ALIASES.has(sound_name):
+		return _resolve(str(SOUND_ALIASES[sound_name]))
 	if _cache.has(sound_name):
 		return _cache[sound_name] as AudioStream
 	if _missing.has(sound_name):

@@ -50,6 +50,7 @@ var floor_scenes: Dictionary = {
 var crt_layer: CanvasLayer = null
 var _floor_entry_carryover: Dictionary = {}
 var _pending_announce: bool = false
+var _quitting: bool = false
 
 
 func _ready() -> void:
@@ -62,6 +63,29 @@ func _ready() -> void:
 	var settings: Node = get_node_or_null("/root/SettingsManager")
 	if settings != null and settings.has_signal("settings_changed"):
 		settings.connect("settings_changed", _on_settings_changed)
+	# Window close goes through quit_game() so audio playbacks are released cleanly.
+	tree.auto_accept_quit = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_game()
+
+
+## Graceful exit: stop audio, give the AudioServer a few frames to drop its playbacks, then quit.
+func quit_game() -> void:
+	if _quitting:
+		return
+	_quitting = true
+	var audio: Node = get_node_or_null("/root/AudioManager")
+	if audio != null and audio.has_method("release_all"):
+		audio.call("release_all")
+	var tree: SceneTree = get_tree()
+	tree.paused = false
+	for _i in 3:
+		await tree.process_frame
+	await tree.create_timer(0.06, true, false, true).timeout
+	tree.quit()
 
 
 # ---------------------------------------------------------------- input safety
@@ -224,6 +248,14 @@ func _change_scene(path: String) -> void:
 
 
 func _on_scene_changed() -> void:
+	# A floor scene opened directly (editor F6 / CLI) keeps the floor number in sync.
+	var scene: Node = get_tree().current_scene
+	if scene != null and not _pending_announce:
+		for key in floor_scenes:
+			if str(floor_scenes[key]) == scene.scene_file_path and int(key) != current_floor:
+				current_floor = int(key)
+				floor_changed.emit(current_floor, get_floor_title(current_floor))
+				break
 	# Re-announce for UI that only exists in the newly loaded scene.
 	if _pending_announce:
 		_pending_announce = false

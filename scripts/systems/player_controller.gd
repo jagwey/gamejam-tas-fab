@@ -173,8 +173,12 @@ func _unhandled_input(event: InputEvent) -> void:
 func _handle_pause() -> void:
 	if health_component.is_dead:
 		return
+	# A lore reader / lock puzzle owns ESC while open; it closes itself in _input.
+	if get_tree().get_first_node_in_group("active_game_modal") != null:
+		return
 	if pause_menu != null and pause_menu.has_method("toggle_pause"):
-		pause_menu.call("toggle_pause")
+		if bool(pause_menu.call("toggle_pause")) and pause_menu is CanvasItem and (pause_menu as CanvasItem).visible:
+			set_controls_enabled(false)
 	pause_requested.emit()
 
 
@@ -400,7 +404,29 @@ func _instance_ui(path: String) -> Node:
 	if packed == null:
 		return null
 	var inst: Node = packed.instantiate()
-	add_child(inst)
+	if inst is Control:
+		# Control roots need their own CanvasLayer so they draw above the 3D view at a fixed order.
+		var layer: CanvasLayer = CanvasLayer.new()
+		match path:
+			HUD_SCENE:
+				layer.name = "HUDLayer"
+				layer.layer = 10
+				layer.process_mode = Node.PROCESS_MODE_INHERIT
+			PAUSE_SCENE:
+				layer.name = "PauseLayer"
+				layer.layer = 30
+				layer.process_mode = Node.PROCESS_MODE_ALWAYS
+			DEATH_SCENE:
+				layer.name = "DeathLayer"
+				layer.layer = 35
+				layer.process_mode = Node.PROCESS_MODE_ALWAYS
+			_:
+				layer.name = "UILayer"
+				layer.layer = 15
+		add_child(layer)
+		layer.add_child(inst)
+	else:
+		add_child(inst)
 	if inst.has_method("setup"):
 		inst.call("setup", self)
 	elif inst.has_method("bind_player"):

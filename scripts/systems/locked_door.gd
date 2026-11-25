@@ -33,7 +33,8 @@ func interact(player: Node) -> void:
 	puzzle.connect("puzzle_solved", _on_solved)
 	overlay.add_child(puzzle)
 	get_tree().paused = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _on_solved() -> void:
 	unlock_and_open()
@@ -50,7 +51,8 @@ func _close_puzzle() -> void:
 	if is_instance_valid(operator) and operator.has_method("set_controls_enabled"):
 		operator.call("set_controls_enabled", true)
 	operator = null
-	Input.mouse_mode = previous_mouse_mode
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = previous_mouse_mode
 
 func unlock_and_open() -> void:
 	if is_unlocked:

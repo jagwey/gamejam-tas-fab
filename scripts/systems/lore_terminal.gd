@@ -24,7 +24,8 @@ func interact(player: Node) -> void:
 	%Scroll.scroll_vertical = 0
 	%Reader.add_to_group("active_game_modal")
 	get_tree().paused = true
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	%Reader.show()
 	%Close.grab_focus()
 
@@ -37,4 +38,5 @@ func _close() -> void:
 	if is_instance_valid(operator) and operator.has_method("set_controls_enabled"):
 		operator.call("set_controls_enabled", true)
 	operator = null
-	Input.mouse_mode = previous_mouse_mode
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = previous_mouse_mode

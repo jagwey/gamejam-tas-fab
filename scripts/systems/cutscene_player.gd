@@ -26,7 +26,8 @@ var pan: Tween
 var textures: Dictionary = {}
 
 func _ready() -> void:
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if DisplayServer.get_name() != "headless":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	AudioManager.play_music("bgm_menu_cutscene")
 	_show_shot()
 	_update_skip_display()
