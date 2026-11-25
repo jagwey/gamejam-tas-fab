@@ -568,8 +568,8 @@ static func get_sprite_frames(prefix: String) -> SpriteFrames:
 
 static func _list_sprite_files() -> PackedStringArray:
 	var out: PackedStringArray = PackedStringArray()
-	if not DirAccess.dir_exists_absolute(SPRITE_DIR):
-		return out
+	# No DirAccess.dir_exists_absolute() guard: inside an exported .pck it can
+	# report false for packed res:// folders. ResourceLoader sees packed files.
 	var raw: PackedStringArray = ResourceLoader.list_directory(SPRITE_DIR)
 	for f in raw:
 		var clean: String = f.trim_suffix(".import").trim_suffix(".remap")
@@ -604,6 +604,17 @@ static func _collect_textures(files: PackedStringArray, prefix: String, anim: St
 		var tex_single: Texture2D = _load_tex(SPRITE_DIR + single)
 		if tex_single != null:
 			result.append(tex_single)
+	if result.is_empty():
+		# Direct-path fallback when directory listing is empty/incomplete
+		# (e.g. standalone exported builds).
+		for i in range(1, 7):
+			var tex_n: Texture2D = _load_tex(SPRITE_DIR + "%s_%d.png" % [base, i])
+			if tex_n != null:
+				result.append(tex_n)
+		if result.is_empty():
+			var tex_b: Texture2D = _load_tex(SPRITE_DIR + base + ".png")
+			if tex_b != null:
+				result.append(tex_b)
 	return result
 
 

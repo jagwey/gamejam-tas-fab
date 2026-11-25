@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/cutscenes/opening_cutscene.tscn" id="layout"]
+[ext_resource type="Script" path="res://scripts/systems/ending_cutscene.gd" id="script"]
+
+[node name="EndingCutscene" instance=ExtResource("layout")]
+script = ExtResource("script")
+
+[node name="Summary" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.015, 0.035, 0.045, 0.94)
+
+[node name="Card" type="Panel" parent="Summary"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -155.0
+offset_right = 320.0
+offset_bottom = 155.0
+
+[node name="Title" type="Label" parent="Summary/Card"]
+offset_left = 36.0
+offset_top = 38.0
+offset_right = 606.0
+offset_bottom = 96.0
+theme_override_font_sizes/font_size = 42
+text = "GÖREV TAMAMLANDI"
+
+[node name="Result" type="Label" parent="Summary/Card"]
+offset_left = 38.0
+offset_top = 112.0
+offset_right = 605.0
+offset_bottom = 195.0
+theme_override_colors/font_color = Color(0.52, 0.93, 0.84, 1)
+theme_override_font_sizes/font_size = 23
+text = "Beta Reaktörü güvende.\nÇatı savunması kapatıldı. Tahliye tamamlandı."
+
+[node name="MenuButton" type="Button" parent="Summary/Card"]
+unique_name_in_owner = true
+offset_left = 38.0
+offset_top = 216.0
+offset_right = 290.0
+offset_bottom = 267.0
+text = "Ana Menüye Dön"

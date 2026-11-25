@@ -1,5 +1,5 @@
 extends SceneTree
-## BETA PROTOCOL — headless acceptance tests (16 criteria).
+## BETA PROTOCOL — headless acceptance tests (22 criteria).
 ## Run:
 ##   Godot_v4.7.2-stable_win64_console.exe --headless --audio-driver Dummy --path <project> --script res://tests/run_tests.gd
 ## Uses the real autoloads under /root, real scenes and real physics steps.
@@ -7,6 +7,19 @@ extends SceneTree
 const MAIN_MENU: String = "res://scenes/ui/main_menu.tscn"
 const FLOOR_1: String = "res://scenes/levels/floor_01_lobby.tscn"
 const FLOOR_2: String = "res://scenes/levels/floor_02_office.tscn"
+const FLOOR_3: String = "res://scenes/levels/floor_03_lab.tscn"
+const FLOOR_4: String = "res://scenes/levels/floor_04_vip.tscn"
+const FLOOR_5: String = "res://scenes/levels/floor_05_rooftop.tscn"
+const ENDING: String = "res://scenes/cutscenes/ending_cutscene.tscn"
+const CIRCUIT_PUZZLE: String = "res://scenes/puzzles/circuit_puzzle.tscn"
+const BIO_PUZZLE: String = "res://scenes/puzzles/bio_match_puzzle.tscn"
+const SEQUENCE_PUZZLE: String = "res://scenes/puzzles/sequence_puzzle.tscn"
+const VOLKOV_SCRIPT: String = "res://scripts/systems/volkov_boss.gd"
+const INTEGRITY_ROOTS: Array[String] = ["res://assets", "res://scenes", "res://scripts", "res://tests"]
+const INTEGRITY_EXTENSIONS: Array[String] = ["tscn", "tres", "gdshader", "png", "wav", "gd"]
+const MIN_PNG: int = 123
+const MIN_WAV: int = 31
+const TEST_COUNT: int = 22
 const CUTSCENE: String = "res://scenes/cutscenes/opening_cutscene.tscn"
 const PUZZLE: String = "res://scenes/puzzles/moving_lock_puzzle.tscn"
 const GUARD: String = "res://scenes/enemies/enemy_guard_lv1.tscn"
@@ -190,7 +203,13 @@ func _run() -> void:
 	await _t15_pause_restart()
 	await _t11_cutscene()
 	await _t12_puzzle()
+	await _t17_floor2_circuit()
+	await _t18_floor3_lab()
+	await _t19_floor4_vip()
+	await _t20_floor5_boss()
+	await _t21_ending()
 	await _t16_resources()
+	await _t22_integrity()
 
 	# Cleanup: test saves, settings, pause state, audio.
 	_sm().call("clear_save")
@@ -214,7 +233,7 @@ func _run() -> void:
 	await _frames(4)
 	await _seconds(0.3)
 	await _frames(4)
-	quit(0 if passed == _results.size() and _results.size() == 16 else 1)
+	quit(0 if passed == _results.size() and _results.size() == TEST_COUNT else 1)
 
 
 # ------------------------------------------------------------------ 1. main menu
@@ -731,3 +750,315 @@ func _t16_resources() -> void:
 	_check(files.size() > 0, "found resources")
 	_check(failed.is_empty(), "failed: %s" % ", ".join(failed))
 	_end()
+
+
+# ------------------------------------------------------------------ 17-19. floors 2-4 helpers
+
+func _check_exit(target: int) -> void:
+	var ex: Node = current_scene.get_node_or_null("Interactables/LevelExit")
+	_check(ex != null, "LevelExit present")
+	if ex == null:
+		return
+	var tf: int = int(ex.get("target_floor"))
+	_check(tf == target, "LevelExit targets floor %d (got %d)" % [target, tf])
+	var scenes: Dictionary = _gm().get("floor_scenes") as Dictionary
+	var path: String = str(scenes.get(target, ""))
+	_check(path != "" and ResourceLoader.exists(path), "GameManager maps floor %d -> %s" % [target, path])
+
+
+## Opens the door's terminal the way the player does (E), checks the unsolved state,
+## then solves it and verifies puzzle_solved + unlock + overlay close/unpause.
+func _check_door_puzzle(door_path: String, puzzle_path: String) -> void:
+	var door: Node = current_scene.get_node_or_null(door_path)
+	_check(door != null, "%s present" % door_path.get_file())
+	if door == null:
+		return
+	var ps: PackedScene = door.get("puzzle_scene") as PackedScene
+	var got: String = ps.resource_path if ps != null else "<null>"
+	_check(got == puzzle_path, "door uses %s (got %s)" % [puzzle_path.get_file(), got])
+	_check(not bool(door.get("is_unlocked")), "door starts locked")
+	var col: CollisionShape3D = door.get_node("DoorCollision") as CollisionShape3D
+	_check(not col.disabled, "DoorCollision enabled while locked")
+	door.call("interact", _player())
+	await _frames(2)
+	var overlay: CanvasLayer = door.get("overlay") as CanvasLayer
+	_check(overlay != null and paused, "terminal overlay opened and tree paused")
+	if overlay == null or overlay.get_child_count() == 0:
+		paused = false
+		return
+	var puzzle: Control = overlay.get_child(0) as Control
+	_check(puzzle.scene_file_path == puzzle_path, "mounted puzzle is %s" % puzzle_path.get_file())
+	_check(not bool(puzzle.get("is_solved")), "puzzle starts unsolved")
+	_check(not bool(door.get("is_unlocked")), "door still locked before solve")
+	_signal_hits["psolved"] = 0
+	_signal_hits["punlock"] = 0
+	puzzle.connect("puzzle_solved", func() -> void: _mark("psolved"))
+	door.connect("door_unlocked", func() -> void: _mark("punlock"))
+	puzzle.call("solve_for_test")
+	await _frames(2)
+	_check(_hits("psolved") == 1, "puzzle_solved emitted once (got %d)" % _hits("psolved"))
+	_check(bool(puzzle.get("is_solved")), "puzzle is_solved")
+	_check(bool(door.get("is_unlocked")) and _hits("punlock") == 1, "door unlocked (door_unlocked emitted)")
+	await _seconds(0.8)
+	await _physics(2)
+	_check(not is_instance_valid(overlay) and not paused, "overlay closed and tree unpaused")
+	_check(col.disabled, "DoorCollision disabled after unlock")
+
+
+## Counts enemies under Enemies/ with this sprite prefix and checks their stats + real sprite frames.
+func _check_enemy_kind(prefix: String, hp: float, dmg: float, interval: float, label: String) -> void:
+	var root_node: Node = current_scene.get_node_or_null("Enemies")
+	var count: int = 0
+	var stats_ok: bool = true
+	var sprite_ok: bool = true
+	var width: int = 0
+	if root_node != null:
+		for n in root_node.get_children():
+			var e: EnemyBase = n as EnemyBase
+			if e == null or e.stats == null or e.stats.sprite_prefix != prefix:
+				continue
+			count += 1
+			if not (is_equal_approx(e.stats.max_health, hp) and is_equal_approx(e.stats.damage, dmg) \
+					and is_equal_approx(e.stats.attack_interval, interval) and is_equal_approx(e.health.max_health, hp)):
+				stats_ok = false
+			var tex: Texture2D = null
+			if e.sprite != null and e.sprite.sprite_frames != null and e.sprite.sprite_frames.has_animation("idle"):
+				tex = e.sprite.sprite_frames.get_frame_texture("idle", 0)
+			if tex == null or tex.get_width() < 64:
+				sprite_ok = false
+			else:
+				width = tex.get_width()
+	_check(count > 0, "%s present (found %d)" % [label, count])
+	_check(stats_ok, "%s stats %.0f HP / %.0f dmg / %.1fs" % [label, hp, dmg, interval])
+	_check(sprite_ok, "%s non-placeholder %s sprite (width %d)" % [label, prefix, width])
+
+
+func _arm_player() -> void:
+	var pl: Node3D = _player()
+	if pl == null:
+		return
+	var hc: HealthComponent = _ap(pl, "health_component") as HealthComponent
+	hc.invulnerable = true
+	hc.set_health(100.0, 100.0)
+
+
+# ------------------------------------------------------------------ 17. floor 2
+
+func _t17_floor2_circuit() -> void:
+	_begin("17 Floor 2 circuit-locked executive door + exit to Floor 3")
+	var ok: bool = await _goto(FLOOR_2)
+	_check(ok, "floor_02 loaded")
+	if ok:
+		_arm_player()
+		await _check_door_puzzle("Interactables/ExecutiveSecurityDoor", CIRCUIT_PUZZLE)
+		_check_exit(3)
+	_end()
+
+
+# ------------------------------------------------------------------ 18. floor 3
+
+func _t18_floor3_lab() -> void:
+	_begin("18 Floor 3 lab: Lv3 heavies + Lv1 techs, bio-match door, exit to Floor 4")
+	var ok: bool = await _goto(FLOOR_3)
+	_check(ok, "floor_03 loaded")
+	if ok:
+		_arm_player()
+		_check_enemy_kind("heavy_lv3", 100.0, 12.0, 1.5, "Lv3 Heavy Guard")
+		_check_enemy_kind("tech_lv1", 40.0, 5.0, 0.9, "Lv1 Armed Technician")
+		await _check_door_puzzle("Interactables/LabSecurityDoor", BIO_PUZZLE)
+		_check_exit(4)
+	_end()
+
+
+# ------------------------------------------------------------------ 19. floor 4
+
+func _t19_floor4_vip() -> void:
+	_begin("19 Floor 4 VIP: Lv4 commandos + Lv2 mercs, sequence door, exit to Floor 5")
+	var ok: bool = await _goto(FLOOR_4)
+	_check(ok, "floor_04 loaded")
+	if ok:
+		_arm_player()
+		_check_enemy_kind("commando_lv4", 140.0, 17.0, 1.9, "Lv4 Elite Commando")
+		_check_enemy_kind("merc_lv2", 65.0, 8.0, 1.2, "Lv2 Mercenary")
+		await _check_door_puzzle("Interactables/VaultSecurityDoor", SEQUENCE_PUZZLE)
+		_check_exit(5)
+	_end()
+
+
+# ------------------------------------------------------------------ 20. floor 5 boss
+
+func _t20_floor5_boss() -> void:
+	_begin("20 Floor 5: Volkov 3-phase boss, reinforcements, Lv5 corpse heal, reactor console")
+	var ok: bool = await _goto(FLOOR_5)
+	_check(ok, "floor_05 loaded")
+	if not ok:
+		_end()
+		return
+	_arm_player()
+	var enemies_root: Node = current_scene.get_node_or_null("Enemies")
+	var boss: EnemyBase = current_scene.get_node_or_null("Enemies/VolkovBoss") as EnemyBase
+	var console: Node = current_scene.get_node_or_null("Interactables/ReactorConsole")
+	_check(boss != null, "Enemies/VolkovBoss spawned")
+	_check(console != null, "Interactables/ReactorConsole spawned")
+	_check(current_scene.get_node_or_null("Rain") is CPUParticles3D, "rain particles spawned")
+	if boss == null or console == null or enemies_root == null:
+		_end()
+		return
+	var script_path: String = (boss.get_script() as Script).resource_path
+	_check(script_path == VOLKOV_SCRIPT, "boss uses volkov_boss.gd (got %s)" % script_path)
+	_check(boss.is_boss, "is_boss flag")
+	_check(boss.health.max_health >= 400.0, "max_health >= 400 (got %.0f)" % boss.health.max_health)
+	var tex: Texture2D = null
+	if boss.sprite != null and boss.sprite.sprite_frames != null and boss.sprite.sprite_frames.has_animation("idle"):
+		tex = boss.sprite.sprite_frames.get_frame_texture("idle", 0)
+	_check(tex != null and tex.get_width() == 96 and tex.get_height() == 128,
+		"volkov_boss 96x128 sprite (got %s)" % (str(tex.get_size()) if tex != null else "null"))
+	_check(not bool(console.get("is_active")), "ReactorConsole starts locked")
+	_check(int(boss.get("phase")) == 1, "boss starts in phase 1")
+	var base_speed: float = boss.stats.move_speed
+	var probe: Node = (load("res://scenes/enemies/boss_volkov.tscn") as PackedScene).instantiate()
+	var shared: EnemyStats = probe.get("stats") as EnemyStats
+	probe.free()
+
+	_signal_hits["phase"] = 0
+	_signal_hits["boss_dead"] = 0
+	boss.connect("phase_changed", func(_p: int) -> void: _mark("phase"))
+	boss.connect("boss_defeated", func() -> void: _mark("boss_dead"))
+	var maxhp: float = boss.health.max_health
+	var count0: int = enemies_root.get_child_count()
+
+	boss.take_damage(maxhp * 0.36)
+	await _physics(2)
+	var count2: int = enemies_root.get_child_count()
+	_check(int(boss.get("phase")) == 2, "64%% HP -> phase 2 (got %d)" % int(boss.get("phase")))
+	_check(count2 == count0 + 2, "phase 2 reinforcements +2 (enemies %d -> %d)" % [count0, count2])
+	_check(not is_equal_approx(boss.stats.move_speed, base_speed), "phase 2 boosts move_speed")
+
+	boss.take_damage(maxhp * 0.35)
+	await _physics(2)
+	var count3: int = enemies_root.get_child_count()
+	_check(int(boss.get("phase")) == 3, "29%% HP -> phase 3 (got %d)" % int(boss.get("phase")))
+	_check(count3 == count2 + 2, "phase 3 reinforcements +2 (enemies %d -> %d)" % [count2, count3])
+	_check(_hits("phase") == 2, "phase_changed emitted twice (got %d)" % _hits("phase"))
+
+	boss.take_damage(maxhp * 0.36)
+	await _physics(2)
+	_check(enemies_root.get_child_count() == count3, "no extra waves after phase 3")
+	_check(boss.is_dead, "boss is dead")
+	_check(_hits("boss_dead") == 1, "boss_defeated emitted once")
+	_check(bool(console.get("is_active")), "ReactorConsole activated")
+	_check(boss.can_be_harvested(), "Lv5 corpse harvestable")
+	_check(boss.stats.level == 5 and is_equal_approx(BetaDeviceController.calculate_heal_amount(100.0, boss.stats.level), 25.0),
+		"Lv5 heal amount = 25")
+	if shared != null:
+		_check(not is_equal_approx(boss.stats.move_speed, shared.move_speed), "phase tweaks did not mutate shared stats")
+
+	# Real 1 s BETA channel on the boss corpse.
+	var pl: Node3D = _player()
+	var hc: HealthComponent = _ap(pl, "health_component") as HealthComponent
+	var beta: BetaDeviceController = _ap(pl, "beta_device") as BetaDeviceController
+	hc.set_health(60.0, 100.0)
+	_place_player(pl, boss.global_position + Vector3(0.0, 0.05, 1.6), 0.0)
+	await _physics(2)
+	_check(beta.find_nearest_corpse() == boss, "BETA finds Volkov corpse")
+	_check(beta.try_start_beta(), "BETA channel started on Volkov")
+	await _seconds(1.25)
+	_check(is_equal_approx(hc.current_health, 85.0), "Volkov corpse healed +25 (got %.1f)" % hc.current_health)
+	_check(boss.is_harvested and not boss.can_be_harvested(), "Volkov corpse drained")
+	hc.invulnerable = false
+	_end()
+
+
+# ------------------------------------------------------------------ 21. ending
+
+func _t21_ending() -> void:
+	_begin("21 Ending cutscene: epilogue, skip hold (2.5 s -> 0.5, reset, 5 s -> summary)")
+	var ok: bool = await _goto(ENDING)
+	_check(ok, "ending_cutscene loaded")
+	if not ok:
+		_end()
+		return
+	var cs: Node = current_scene
+	await _frames(2)
+	var dialogue: Label = cs.get_node_or_null("%Dialogue") as Label
+	var bg: TextureRect = cs.get_node_or_null("%Background") as TextureRect
+	var summary: Control = cs.get_node_or_null("%Summary") as Control
+	_check(int(cs.get("shot_index")) == 0, "epilogue starts at shot 0")
+	_check(dialogue != null and dialogue.text.length() > 0, "epilogue dialogue shown")
+	_check(bg != null and bg.texture != null, "epilogue background loaded")
+	_check(summary != null and not summary.visible, "summary hidden at start")
+	cs.call("simulate_space_hold", 2.5, true)
+	var p: float = float(cs.call("get_skip_progress"))
+	_check(absf(p - 0.5) < 0.01, "2.5 s hold -> %.3f progress" % p)
+	cs.call("simulate_space_hold", 0.1, false)
+	_check(is_zero_approx(float(cs.call("get_skip_progress"))), "release resets progress")
+	_signal_hits["ending"] = 0
+	cs.connect("cutscene_finished", func() -> void: _mark("ending"))
+	cs.call("simulate_space_hold", 5.0, true)
+	await _frames(3)
+	_check(_hits("ending") == 1, "cutscene_finished emitted once (got %d)" % _hits("ending"))
+	_check(summary != null and summary.visible, "%Summary visible")
+	_check(current_scene == cs, "ending stays on summary (no auto scene change)")
+	_end()
+
+
+# ------------------------------------------------------------------ 22. integrity
+
+func _t22_integrity() -> void:
+	_begin("22 Full project integrity (every tscn/tres/gdshader/png/wav/gd loads; scenes instantiate)")
+	var files: Array[String] = []
+	for r in INTEGRITY_ROOTS:
+		_collect_ext(r, files, INTEGRITY_EXTENSIONS)
+	if FileAccess.file_exists("res://default_bus_layout.tres"):
+		files.append("res://default_bus_layout.tres")
+	var failed: PackedStringArray = []
+	var bad_scenes: PackedStringArray = []
+	var counts: Dictionary = {}
+	for f in files:
+		var ext: String = f.get_extension()
+		counts[ext] = int(counts.get(ext, 0)) + 1
+		var res: Resource = ResourceLoader.load(f)
+		if res == null:
+			failed.append(f)
+			continue
+		if res is PackedScene:
+			var ps: PackedScene = res as PackedScene
+			if not ps.can_instantiate():
+				bad_scenes.append(f)
+				continue
+			var inst: Node = ps.instantiate()
+			if inst == null:
+				bad_scenes.append(f)
+			else:
+				inst.free()
+		elif res is GDScript:
+			if not (res as GDScript).can_instantiate():
+				failed.append(f + " (script)")
+	print("       integrity: ", counts, " total=", files.size())
+	_check(int(counts.get("png", 0)) >= MIN_PNG, "png >= %d (got %d)" % [MIN_PNG, int(counts.get("png", 0))])
+	_check(int(counts.get("wav", 0)) >= MIN_WAV, "wav >= %d (got %d)" % [MIN_WAV, int(counts.get("wav", 0))])
+	_check(int(counts.get("tscn", 0)) > 0 and int(counts.get("tres", 0)) > 0 and int(counts.get("gdshader", 0)) > 0,
+		"tscn/tres/gdshader present")
+	_check(failed.is_empty(), "failed to load: %s" % ", ".join(failed))
+	_check(bad_scenes.is_empty(), "failed to instantiate: %s" % ", ".join(bad_scenes))
+	for i in range(1, 6):
+		var path: String = str((_gm().get("floor_scenes") as Dictionary).get(i, ""))
+		_check(ResourceLoader.exists(path), "floor %d scene registered" % i)
+	_end()
+
+
+func _collect_ext(dir_path: String, out: Array[String], exts: Array[String]) -> void:
+	var dir: DirAccess = DirAccess.open(dir_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var entry: String = dir.get_next()
+	while entry != "":
+		if not entry.begins_with("."):
+			var full: String = dir_path.path_join(entry)
+			if dir.current_is_dir():
+				_collect_ext(full, out, exts)
+			elif entry.get_extension() in exts:
+				out.append(full)
+		entry = dir.get_next()
+	dir.list_dir_end()

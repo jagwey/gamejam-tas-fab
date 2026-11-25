@@ -1,0 +1,126 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/sequence_puzzle.gd" id="script"]
+[ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
+
+[node name="SequencePuzzle" type="ColorRect" groups=["active_game_modal"]]
+process_mode = 3
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.008,0.018,0.029,0.91)
+theme = ExtResource("theme")
+script = ExtResource("script")
+
+[node name="Panel" type="Panel" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -270.0
+offset_right = 400.0
+offset_bottom = 270.0
+
+[node name="Location" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 32.0
+offset_top = 21.0
+offset_right = 767.0
+offset_bottom = 46.0
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.33,0.93,0.89,1)
+text = "KAT 04     /     ÖZEL ERİŞİM"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 32.0
+offset_top = 50.0
+offset_right = 762.0
+offset_bottom = 103.0
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.91,0.95,0.93,1)
+text = "VIP ERİŞİM ŞİFRESİ"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Instructions" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 33.0
+offset_top = 106.0
+offset_right = 770.0
+offset_bottom = 147.0
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.91,0.95,0.93,1)
+text = "Üstteki şifreyi soldan sağa oku. Aşağıdaki tuşlarla sırayı gir."
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="TargetTitle" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 62.0
+offset_top = 164.0
+offset_right = 562.0
+offset_bottom = 189.0
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.91,0.95,0.93,1)
+text = "HEDEF SIRA"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Pattern" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 62.0
+offset_top = 197.0
+offset_right = 572.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 37
+theme_override_colors/font_color = Color(0.91,0.95,0.93,1)
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Replay" type="Button" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 565.0
+offset_top = 201.0
+offset_right = 735.0
+offset_bottom = 252.0
+text = "Sırayı göster"
+
+[node name="Keys" type="HBoxContainer" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 62.0
+offset_top = 287.0
+offset_right = 738.0
+offset_bottom = 352.0
+theme_override_constants/separation = 12
+
+[node name="Stages" type="HBoxContainer" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 62.0
+offset_top = 367.0
+offset_right = 738.0
+offset_bottom = 412.0
+theme_override_constants/separation = 12
+
+[node name="Status" type="Label" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 32.0
+offset_top = 453.0
+offset_right = 602.0
+offset_bottom = 511.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.33,0.93,0.89,1)
+text = ""
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="Cancel" type="Button" parent="Panel"]
+unique_name_in_owner = true
+offset_left = 620.0
+offset_top = 459.0
+offset_right = 769.0
+offset_bottom = 505.0
+text = "[ESC]  Kapat"

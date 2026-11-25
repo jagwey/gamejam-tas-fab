@@ -1,29 +1,38 @@
 extends Node3D
-## Floor 2 — Office & Archive. Objectives, music, and the vertical-slice completion console.
+## Floor 2 — Office & Archive. Music, objectives and the circuit-locked executive security door.
 
-const OBJ_START: String = "GÖREV: Ofis ve arşiv katını incele — Volkov'un verilerine ulaş"
-const OBJ_CONSOLE: String = "GÖREV: Yönetici odasındaki konsoldan dikey kesit raporunu aç"
+const OBJ_START: String = "GÖREV: Ofis ve arşivi temizle — yönetici güvenlik kapısının devre kilidini çöz"
+const OBJ_EXIT: String = "GÖREV: Asansörle 3. Kata çık"
+const PUZZLE_PATH: String = "res://scenes/puzzles/circuit_puzzle.tscn"
+const DOOR_PROMPT: String = "[E] Devre Kilidi Terminalini Aç"
 
 @onready var archive_terminal: Node = get_node_or_null("Interactables/ArchiveLoreTerminal")
-@onready var console: Node = get_node_or_null("Interactables/VerticalSliceConsole")
-@onready var archive_merc: Node = get_node_or_null("Enemies/ArchiveMerc")
-
-var _console_hint_shown: bool = false
+@onready var security_door: Node = get_node_or_null("Interactables/ExecutiveSecurityDoor")
+@onready var level_exit: Node = get_node_or_null("Interactables/LevelExit")
 
 
 func _ready() -> void:
 	AudioManager.play_music("bgm_floor2_office")
 	GameManager.set_objective(OBJ_START)
-	if archive_merc != null and archive_merc.has_signal("died"):
-		archive_merc.connect("died", _on_archive_cleared)
+	_setup_door(security_door, PUZZLE_PATH, DOOR_PROMPT)
 
 
-func get_console() -> Node:
-	return console
+func get_security_door() -> Node:
+	return security_door
 
 
-func _on_archive_cleared(_enemy: Node = null) -> void:
-	if _console_hint_shown:
+func _setup_door(door: Node, puzzle_path: String, prompt: String) -> void:
+	if door == null:
 		return
-	_console_hint_shown = true
-	GameManager.set_objective(OBJ_CONSOLE)
+	if ResourceLoader.exists(puzzle_path) and "puzzle_scene" in door:
+		var scene: Resource = load(puzzle_path)
+		if scene is PackedScene:
+			door.set("puzzle_scene", scene)
+	if "custom_prompt" in door:
+		door.set("custom_prompt", prompt)
+	if door.has_signal("door_unlocked"):
+		door.connect("door_unlocked", _on_door_unlocked)
+
+
+func _on_door_unlocked() -> void:
+	GameManager.set_objective(OBJ_EXIT)

@@ -13,9 +13,9 @@ const CRT_OVERLAY_SCENE: String = "res://scenes/ui/crt_overlay.tscn"
 const FLOOR_TITLES: Dictionary = {
 	1: "KAT 1: LOBİ VE GÜVENLİK",
 	2: "KAT 2: OFİS VE ARŞİV",
-	3: "KAT 3: LABORATUVAR",
-	4: "KAT 4: SUNUCU ÇEKİRDEĞİ",
-	5: "KAT 5: YÖNETİM KATI",
+	3: "KAT 3: BİYOTEKNOLOJİ LABORATUVARI",
+	4: "KAT 4: VIP VE KUMARHANE",
+	5: "KAT 5: ÇATI VE REAKTÖR",
 }
 
 ## action -> Array of [type, code]. type "key" uses physical keycode, "mouse" uses button index.
@@ -45,6 +45,9 @@ var player_carryover: Dictionary = {}
 var floor_scenes: Dictionary = {
 	1: "res://scenes/levels/floor_01_lobby.tscn",
 	2: "res://scenes/levels/floor_02_office.tscn",
+	3: "res://scenes/levels/floor_03_lab.tscn",
+	4: "res://scenes/levels/floor_04_vip.tscn",
+	5: "res://scenes/levels/floor_05_rooftop.tscn",
 }
 
 var crt_layer: CanvasLayer = null

@@ -3,6 +3,8 @@ extends StaticBody3D
 signal door_unlocked
 
 const PUZZLE_SCENE: PackedScene = preload("res://scenes/puzzles/moving_lock_puzzle.tscn")
+@export var puzzle_scene: PackedScene = PUZZLE_SCENE
+@export var custom_prompt: String = ""
 var is_unlocked: bool = false
 var overlay: CanvasLayer
 var operator: Node
@@ -15,20 +17,24 @@ func _ready() -> void:
 	$RightLeaf/Status.material_override = status_material
 
 func get_interact_prompt(_player: Node = null) -> String:
-	return "" if is_unlocked else "[E] Güvenlik Kilidi Terminalini Aç"
+	if is_unlocked:
+		return ""
+	return custom_prompt if not custom_prompt.is_empty() else "[E] Güvenlik Kilidi Terminalini Aç"
 
 func interact(player: Node) -> void:
 	if is_unlocked or is_instance_valid(overlay) or get_tree().paused:
 		return
 	operator = player
-	previous_mouse_mode = Input.mouse_mode
+	if DisplayServer.get_name() != "headless":
+		previous_mouse_mode = Input.mouse_mode
 	if is_instance_valid(operator) and operator.has_method("set_controls_enabled"):
 		operator.call("set_controls_enabled", false)
 	overlay = CanvasLayer.new()
 	overlay.layer = 20
 	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(overlay)
-	var puzzle: Control = PUZZLE_SCENE.instantiate() as Control
+	var scene_to_use: PackedScene = puzzle_scene if puzzle_scene != null else PUZZLE_SCENE
+	var puzzle: Control = scene_to_use.instantiate() as Control
 	puzzle.connect("puzzle_cancelled", _close_puzzle)
 	puzzle.connect("puzzle_solved", _on_solved)
 	overlay.add_child(puzzle)
@@ -70,3 +76,43 @@ func unlock_and_open() -> void:
 	slide.tween_property($LeftLeaf, "position:x", -3.05, 0.7)
 	slide.tween_property($RightLeaf, "position:x", 3.05, 0.7)
 	door_unlocked.emit()
+
+
+## Common lifecycle of the interactive terminal screens mounted by this door.
+class TerminalModal extends Control:
+	signal puzzle_solved
+	signal puzzle_cancelled
+
+	const CYAN := Color("#55eee3")
+	const GREEN := Color("#65f29e")
+	const CRIMSON := Color("#ff6475")
+	var is_solved := false
+
+	func _ready() -> void:
+		%Cancel.pressed.connect(_cancel)
+
+	func _input(event: InputEvent) -> void:
+		if is_visible_in_tree() and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause")):
+			get_viewport().set_input_as_handled()
+			_cancel()
+
+	func _cancel() -> void:
+		if is_solved or not visible:
+			return
+		hide()
+		puzzle_cancelled.emit()
+		queue_free()
+
+	func _status(message: String, color: Color = CYAN) -> void:
+		%Status.text = message
+		%Status.add_theme_color_override("font_color", color)
+
+	func _finish(message: String) -> void:
+		if is_solved:
+			return
+		is_solved = true
+		for button in find_children("*", "Button", true, false):
+			(button as Button).disabled = true
+		_status(message, GREEN)
+		AudioManager.play_sfx("sfx_puzzle_success")
+		puzzle_solved.emit()
