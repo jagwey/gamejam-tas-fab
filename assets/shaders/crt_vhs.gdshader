@@ -1,11 +1,11 @@
 shader_type canvas_item;
 render_mode unshaded;
 
-uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap, repeat_disable;
-uniform float scanline_strength : hint_range(0.0, 0.25, 0.005) = 0.075;
-uniform float aberration_amount : hint_range(0.0, 3.0, 0.1) = 1.0;
-uniform float vignette_strength : hint_range(0.0, 0.35, 0.01) = 0.12;
-uniform float noise_amount : hint_range(0.0, 0.06, 0.001) = 0.009;
+uniform sampler2D screen_texture : hint_screen_texture, filter_nearest, repeat_disable;
+uniform float scanline_strength : hint_range(0.0, 0.25, 0.005) = 0.055;
+uniform float aberration_amount : hint_range(0.0, 3.0, 0.05) = 0.65;
+uniform float vignette_strength : hint_range(0.0, 0.35, 0.01) = 0.10;
+uniform float noise_amount : hint_range(0.0, 0.06, 0.001) = 0.007;
 
 float grain(vec2 pixel, float frame) {
 	return fract(52.9829189 * fract(dot(pixel + frame * 0.071, vec2(0.06711056, 0.00583715))));

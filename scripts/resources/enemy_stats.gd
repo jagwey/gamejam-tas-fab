@@ -18,3 +18,9 @@ extends Resource
 @export var can_harvest_beta: bool = true
 @export var projectile_spread_deg: float = 3.5
 @export var tint_color: Color = Color.WHITE
+## Shots fired per attack (1 = single shot).
+@export var burst_count: int = 1
+## Seconds between shots inside a burst.
+@export var burst_interval: float = 0.11
+## 0..1 — chance-weighted reduction of hit-stagger (heavies shrug off small hits).
+@export var stagger_resistance: float = 0.0

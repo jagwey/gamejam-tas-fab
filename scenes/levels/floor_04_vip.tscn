@@ -92,374 +92,451 @@ size = Vector3(8.5, 0.3, 10.5)
 [sub_resource type="BoxShape3D" id="BoxShape3D_15"]
 size = Vector3(8.5, 0.3, 10.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_16"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(8.5, 4, 0.5)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_16"]
+albedo_color = Color(0.16, 0.18, 0.21, 1)
+metallic = 0.55
+roughness = 0.5
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_17"]
-size = Vector3(8.5, 4, 0.5)
+[sub_resource type="BoxMesh" id="BoxMesh_17"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(8, 0.22, 0.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_18"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 4, 10.5)
+size = Vector3(8.5, 4, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_19"]
-size = Vector3(0.5, 4, 10.5)
+size = Vector3(8.5, 4, 0.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_20"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(8.5, 0.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_21"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 4, 10.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_22"]
+size = Vector3(0.5, 4, 10.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_23"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 10.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_24"]
 material = SubResource("StandardMaterial3D_7")
 size = Vector3(3.2, 3, 0.06)
 
-[sub_resource type="BoxMesh" id="BoxMesh_21"]
+[sub_resource type="BoxMesh" id="BoxMesh_25"]
 material = SubResource("StandardMaterial3D_8")
 size = Vector3(0.4, 0.08, 8)
 
-[sub_resource type="BoxMesh" id="BoxMesh_22"]
+[sub_resource type="BoxMesh" id="BoxMesh_26"]
 material = SubResource("StandardMaterial3D_2")
 size = Vector3(32, 0.5, 30)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_23"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_27"]
 size = Vector3(32, 0.5, 30)
 
-[sub_resource type="BoxMesh" id="BoxMesh_24"]
+[sub_resource type="BoxMesh" id="BoxMesh_28"]
 material = SubResource("StandardMaterial3D_5")
 size = Vector3(32.5, 0.3, 30.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_25"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_29"]
 size = Vector3(32.5, 0.3, 30.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_26"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(13.25, 6, 0.5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_27"]
-size = Vector3(13.25, 6, 0.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_28"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(6, 2.4, 0.5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_29"]
-size = Vector3(6, 2.4, 0.5)
-
 [sub_resource type="BoxMesh" id="BoxMesh_30"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.2, 0.22, 30)
+
+[sub_resource type="BoxMesh" id="BoxMesh_31"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 6, 12.25)
+size = Vector3(13.25, 6, 0.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_31"]
-size = Vector3(0.5, 6, 12.25)
+[sub_resource type="BoxShape3D" id="BoxShape3D_32"]
+size = Vector3(13.25, 6, 0.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_32"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 2.8, 6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_33"]
-size = Vector3(0.5, 2.8, 6)
+[sub_resource type="BoxMesh" id="BoxMesh_33"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(13.25, 0.14, 0.05)
 
 [sub_resource type="BoxMesh" id="BoxMesh_34"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 3, 4)
+size = Vector3(6, 2.4, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_35"]
-size = Vector3(0.5, 3, 4)
+size = Vector3(6, 2.4, 0.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_36"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 6, 14.25)
+size = Vector3(0.5, 6, 12.25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_37"]
-size = Vector3(0.5, 6, 14.25)
+size = Vector3(0.5, 6, 12.25)
 
 [sub_resource type="BoxMesh" id="BoxMesh_38"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 12.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_39"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 2.8, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_40"]
+size = Vector3(0.5, 2.8, 6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_41"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 3, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_42"]
+size = Vector3(0.5, 3, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_43"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 6, 14.25)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_44"]
+size = Vector3(0.5, 6, 14.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_45"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 14.25)
+
+[sub_resource type="BoxMesh" id="BoxMesh_46"]
 material = SubResource("StandardMaterial3D_3")
 size = Vector3(6, 2.2, 0.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_39"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_47"]
 size = Vector3(6, 2.2, 0.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_40"]
+[sub_resource type="BoxMesh" id="BoxMesh_48"]
 material = SubResource("StandardMaterial3D_6")
 size = Vector3(3.2, 0.85, 1.8)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_41"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_49"]
 size = Vector3(3.2, 0.85, 1.8)
 
-[sub_resource type="BoxMesh" id="BoxMesh_42"]
+[sub_resource type="BoxMesh" id="BoxMesh_50"]
 material = SubResource("StandardMaterial3D_4")
 size = Vector3(2.9, 0.05, 1.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_43"]
+[sub_resource type="BoxMesh" id="BoxMesh_51"]
 material = SubResource("StandardMaterial3D_7")
 size = Vector3(3.2, 0.07, 0.1)
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_44"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_52"]
 material = SubResource("StandardMaterial3D_6")
 top_radius = 1.6
 bottom_radius = 1.6
 height = 0.9
 radial_segments = 24
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_45"]
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_53"]
 height = 0.9
 radius = 1.6
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_46"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_54"]
 material = SubResource("StandardMaterial3D_4")
 top_radius = 1.45
 bottom_radius = 1.45
 height = 0.05
 radial_segments = 24
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_47"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_55"]
 material = SubResource("StandardMaterial3D_7")
 top_radius = 0.7
 bottom_radius = 0.7
 height = 0.1
 radial_segments = 24
 
-[sub_resource type="BoxMesh" id="BoxMesh_48"]
-material = SubResource("StandardMaterial3D_6")
-size = Vector3(1.2, 6, 1.2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_49"]
-size = Vector3(1.2, 6, 1.2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_50"]
-material = SubResource("StandardMaterial3D_8")
-size = Vector3(1.3, 0.15, 1.3)
-
-[sub_resource type="BoxMesh" id="BoxMesh_51"]
-material = SubResource("StandardMaterial3D_7")
-size = Vector3(1.3, 0.2, 1.3)
-
-[sub_resource type="BoxMesh" id="BoxMesh_52"]
-material = SubResource("StandardMaterial3D_7")
-size = Vector3(1.3, 0.3, 1.3)
-
-[sub_resource type="BoxMesh" id="BoxMesh_53"]
-material = SubResource("StandardMaterial3D_6")
-size = Vector3(1.15, 1.9, 1.4)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_54"]
-size = Vector3(1.15, 1.9, 1.4)
-
-[sub_resource type="BoxMesh" id="BoxMesh_55"]
-material = SubResource("StandardMaterial3D_10")
-size = Vector3(0.05, 0.6, 1)
-
 [sub_resource type="BoxMesh" id="BoxMesh_56"]
-material = SubResource("StandardMaterial3D_9")
-size = Vector3(1.2, 0.1, 1.4)
+material = SubResource("StandardMaterial3D_6")
+size = Vector3(1.2, 6, 1.2)
 
-[sub_resource type="BoxMesh" id="BoxMesh_57"]
-material = SubResource("StandardMaterial3D_8")
-size = Vector3(12, 0.1, 0.6)
+[sub_resource type="BoxShape3D" id="BoxShape3D_57"]
+size = Vector3(1.2, 6, 1.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_58"]
 material = SubResource("StandardMaterial3D_8")
-size = Vector3(0.6, 0.1, 12)
+size = Vector3(1.3, 0.15, 1.3)
 
 [sub_resource type="BoxMesh" id="BoxMesh_59"]
+material = SubResource("StandardMaterial3D_7")
+size = Vector3(1.3, 0.2, 1.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_60"]
+material = SubResource("StandardMaterial3D_7")
+size = Vector3(1.3, 0.3, 1.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_61"]
+material = SubResource("StandardMaterial3D_6")
+size = Vector3(1.15, 1.9, 1.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_62"]
+size = Vector3(1.15, 1.9, 1.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_63"]
+material = SubResource("StandardMaterial3D_10")
+size = Vector3(0.05, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_64"]
+material = SubResource("StandardMaterial3D_9")
+size = Vector3(1.2, 0.1, 1.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_65"]
+material = SubResource("StandardMaterial3D_8")
+size = Vector3(12, 0.1, 0.6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_66"]
+material = SubResource("StandardMaterial3D_8")
+size = Vector3(0.6, 0.1, 12)
+
+[sub_resource type="BoxMesh" id="BoxMesh_67"]
 material = SubResource("StandardMaterial3D_9")
 size = Vector3(6, 0.1, 0.1)
 
-[sub_resource type="BoxMesh" id="BoxMesh_60"]
+[sub_resource type="BoxMesh" id="BoxMesh_68"]
 material = SubResource("StandardMaterial3D_2")
 size = Vector3(14, 0.5, 16)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_61"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_69"]
 size = Vector3(14, 0.5, 16)
 
-[sub_resource type="BoxMesh" id="BoxMesh_62"]
+[sub_resource type="BoxMesh" id="BoxMesh_70"]
 material = SubResource("StandardMaterial3D_5")
 size = Vector3(14.5, 0.3, 16.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_63"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_71"]
 size = Vector3(14.5, 0.3, 16.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_64"]
+[sub_resource type="BoxMesh" id="BoxMesh_72"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(14, 0.22, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_73"]
 material = SubResource("StandardMaterial3D_3")
 size = Vector3(0.5, 4.5, 16.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_65"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_74"]
 size = Vector3(0.5, 4.5, 16.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_66"]
+[sub_resource type="BoxMesh" id="BoxMesh_75"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 16.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_76"]
 material = SubResource("StandardMaterial3D_3")
 size = Vector3(14.5, 4.5, 0.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_67"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_77"]
 size = Vector3(14.5, 4.5, 0.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_68"]
+[sub_resource type="BoxMesh" id="BoxMesh_78"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(14.5, 0.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_79"]
 material = SubResource("StandardMaterial3D_6")
 size = Vector3(1, 1.1, 12)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_69"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_80"]
 size = Vector3(1, 1.1, 12)
 
-[sub_resource type="BoxMesh" id="BoxMesh_70"]
+[sub_resource type="BoxMesh" id="BoxMesh_81"]
 material = SubResource("StandardMaterial3D_7")
 size = Vector3(1.2, 0.06, 12.2)
 
-[sub_resource type="BoxMesh" id="BoxMesh_71"]
+[sub_resource type="BoxMesh" id="BoxMesh_82"]
 material = SubResource("StandardMaterial3D_8")
 size = Vector3(0.45, 2, 10)
 
-[sub_resource type="BoxMesh" id="BoxMesh_72"]
+[sub_resource type="BoxMesh" id="BoxMesh_83"]
 material = SubResource("StandardMaterial3D_4")
 size = Vector3(3.5, 0.7, 1.2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_73"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_84"]
 size = Vector3(3.5, 0.7, 1.2)
 
-[sub_resource type="BoxMesh" id="BoxMesh_74"]
+[sub_resource type="BoxMesh" id="BoxMesh_85"]
 material = SubResource("StandardMaterial3D_7")
 size = Vector3(1.5, 0.5, 2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_75"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_86"]
 size = Vector3(1.5, 0.5, 2)
 
-[sub_resource type="BoxMesh" id="BoxMesh_76"]
+[sub_resource type="BoxMesh" id="BoxMesh_87"]
 material = SubResource("StandardMaterial3D_9")
 size = Vector3(10, 0.08, 0.4)
 
-[sub_resource type="BoxMesh" id="BoxMesh_77"]
+[sub_resource type="BoxMesh" id="BoxMesh_88"]
 material = SubResource("StandardMaterial3D_2")
 size = Vector3(12, 0.5, 12)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_78"]
-size = Vector3(12, 0.5, 12)
-
-[sub_resource type="BoxMesh" id="BoxMesh_79"]
-material = SubResource("StandardMaterial3D_5")
-size = Vector3(12.5, 0.3, 12.5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_80"]
-size = Vector3(12.5, 0.3, 12.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_81"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 4, 12.5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_82"]
-size = Vector3(0.5, 4, 12.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_83"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(12.5, 4, 0.5)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_84"]
-size = Vector3(12.5, 4, 0.5)
-
-[sub_resource type="BoxMesh" id="BoxMesh_85"]
-material = SubResource("StandardMaterial3D_6")
-size = Vector3(2, 0.9, 6)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_86"]
-size = Vector3(2, 0.9, 6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_87"]
-material = SubResource("StandardMaterial3D_11")
-size = Vector3(0.05, 1.8, 6)
-
-[sub_resource type="BoxMesh" id="BoxMesh_88"]
-material = SubResource("StandardMaterial3D_6")
-size = Vector3(4, 2.2, 0.55)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_89"]
-size = Vector3(4, 2.2, 0.55)
+size = Vector3(12, 0.5, 12)
 
 [sub_resource type="BoxMesh" id="BoxMesh_90"]
-material = SubResource("StandardMaterial3D_7")
-size = Vector3(1.5, 1, 1.2)
+material = SubResource("StandardMaterial3D_5")
+size = Vector3(12.5, 0.3, 12.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_91"]
-size = Vector3(1.5, 1, 1.2)
+size = Vector3(12.5, 0.3, 12.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_92"]
-material = SubResource("StandardMaterial3D_2")
-size = Vector3(8, 0.5, 14)
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(12, 0.22, 0.2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_93"]
-size = Vector3(8, 0.5, 14)
+[sub_resource type="BoxMesh" id="BoxMesh_93"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 4, 12.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_94"]
-material = SubResource("StandardMaterial3D_5")
-size = Vector3(8.5, 0.3, 14.5)
+[sub_resource type="BoxShape3D" id="BoxShape3D_94"]
+size = Vector3(0.5, 4, 12.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_95"]
-size = Vector3(8.5, 0.3, 14.5)
+[sub_resource type="BoxMesh" id="BoxMesh_95"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 12.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_96"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 4.5, 14.5)
+size = Vector3(12.5, 4, 0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_97"]
-size = Vector3(0.5, 4.5, 14.5)
+size = Vector3(12.5, 4, 0.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_98"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(2.25, 4.5, 0.5)
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(12.5, 0.14, 0.05)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_99"]
-size = Vector3(2.25, 4.5, 0.5)
+[sub_resource type="BoxMesh" id="BoxMesh_99"]
+material = SubResource("StandardMaterial3D_6")
+size = Vector3(2, 0.9, 6)
 
-[sub_resource type="BoxMesh" id="BoxMesh_100"]
-material = SubResource("StandardMaterial3D_3")
-size = Vector3(4, 1.3, 0.5)
+[sub_resource type="BoxShape3D" id="BoxShape3D_100"]
+size = Vector3(2, 0.9, 6)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_101"]
-size = Vector3(4, 1.3, 0.5)
+[sub_resource type="BoxMesh" id="BoxMesh_101"]
+material = SubResource("StandardMaterial3D_11")
+size = Vector3(0.05, 1.8, 6)
 
 [sub_resource type="BoxMesh" id="BoxMesh_102"]
-material = SubResource("StandardMaterial3D_7")
-size = Vector3(1.35, 1.2, 1)
+material = SubResource("StandardMaterial3D_6")
+size = Vector3(4, 2.2, 0.55)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_103"]
-size = Vector3(1.35, 1.2, 1)
+size = Vector3(4, 2.2, 0.55)
 
 [sub_resource type="BoxMesh" id="BoxMesh_104"]
-material = SubResource("StandardMaterial3D_8")
-size = Vector3(0.05, 0.1, 13)
+material = SubResource("StandardMaterial3D_7")
+size = Vector3(1.5, 1, 1.2)
 
-[sub_resource type="BoxMesh" id="BoxMesh_105"]
-material = SubResource("StandardMaterial3D_9")
-size = Vector3(4, 0.1, 0.04)
+[sub_resource type="BoxShape3D" id="BoxShape3D_105"]
+size = Vector3(1.5, 1, 1.2)
 
 [sub_resource type="BoxMesh" id="BoxMesh_106"]
 material = SubResource("StandardMaterial3D_2")
-size = Vector3(6, 0.5, 8)
+size = Vector3(8, 0.5, 14)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_107"]
-size = Vector3(6, 0.5, 8)
+size = Vector3(8, 0.5, 14)
 
 [sub_resource type="BoxMesh" id="BoxMesh_108"]
 material = SubResource("StandardMaterial3D_5")
-size = Vector3(6.5, 0.3, 8.5)
+size = Vector3(8.5, 0.3, 14.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_109"]
-size = Vector3(6.5, 0.3, 8.5)
+size = Vector3(8.5, 0.3, 14.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_110"]
 material = SubResource("StandardMaterial3D_3")
-size = Vector3(0.5, 3.6, 8.5)
+size = Vector3(0.5, 4.5, 14.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_111"]
-size = Vector3(0.5, 3.6, 8.5)
+size = Vector3(0.5, 4.5, 14.5)
 
 [sub_resource type="BoxMesh" id="BoxMesh_112"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 14.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_113"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(2.25, 4.5, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_114"]
+size = Vector3(2.25, 4.5, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_115"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(2.25, 0.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_116"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(4, 1.3, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_117"]
+size = Vector3(4, 1.3, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_118"]
+material = SubResource("StandardMaterial3D_7")
+size = Vector3(1.35, 1.2, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_119"]
+size = Vector3(1.35, 1.2, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_120"]
+material = SubResource("StandardMaterial3D_8")
+size = Vector3(0.05, 0.1, 13)
+
+[sub_resource type="BoxMesh" id="BoxMesh_121"]
+material = SubResource("StandardMaterial3D_9")
+size = Vector3(4, 0.1, 0.04)
+
+[sub_resource type="BoxMesh" id="BoxMesh_122"]
+material = SubResource("StandardMaterial3D_2")
+size = Vector3(6, 0.5, 8)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_123"]
+size = Vector3(6, 0.5, 8)
+
+[sub_resource type="BoxMesh" id="BoxMesh_124"]
+material = SubResource("StandardMaterial3D_5")
+size = Vector3(6.5, 0.3, 8.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_125"]
+size = Vector3(6.5, 0.3, 8.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_126"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(6, 0.22, 0.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_127"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector3(0.5, 3.6, 8.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_128"]
+size = Vector3(0.5, 3.6, 8.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_129"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(0.05, 0.14, 8.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_130"]
 material = SubResource("StandardMaterial3D_3")
 size = Vector3(6.5, 3.6, 0.5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_113"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_131"]
 size = Vector3(6.5, 3.6, 0.5)
 
-[sub_resource type="BoxMesh" id="BoxMesh_114"]
+[sub_resource type="BoxMesh" id="BoxMesh_132"]
+material = SubResource("StandardMaterial3D_16")
+size = Vector3(6.5, 0.14, 0.05)
+
+[sub_resource type="BoxMesh" id="BoxMesh_133"]
 material = SubResource("StandardMaterial3D_3")
 size = Vector3(3, 3, 0.07)
 
-[sub_resource type="BoxMesh" id="BoxMesh_115"]
+[sub_resource type="BoxMesh" id="BoxMesh_134"]
 material = SubResource("StandardMaterial3D_8")
 size = Vector3(3.4, 0.1, 0.07)
 
@@ -497,729 +574,1009 @@ mesh = SubResource("BoxMesh_14")
 [node name="Shape" type="CollisionShape3D" parent="Geometry/FoyerCeiling"]
 shape = SubResource("BoxShape3D_15")
 
+[node name="FoyerRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 3.89, -6.667)
+mesh = SubResource("BoxMesh_17")
+
+[node name="FoyerRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 3.89, -3.333)
+mesh = SubResource("BoxMesh_17")
+
 [node name="FoyerSouthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 2, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/FoyerSouthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_16")
+mesh = SubResource("BoxMesh_18")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/FoyerSouthWall"]
-shape = SubResource("BoxShape3D_17")
+shape = SubResource("BoxShape3D_19")
+
+[node name="FoyerSouthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 0.07, -0.275)
+mesh = SubResource("BoxMesh_20")
+
+[node name="FoyerSouthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 0.07, 0.275)
+mesh = SubResource("BoxMesh_20")
 
 [node name="FoyerWestWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-4, 2, -5)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/FoyerWestWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_18")
+mesh = SubResource("BoxMesh_21")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/FoyerWestWall"]
-shape = SubResource("BoxShape3D_19")
+shape = SubResource("BoxShape3D_22")
+
+[node name="FoyerWestWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-4.275, 0.07, -5)
+mesh = SubResource("BoxMesh_23")
+
+[node name="FoyerWestWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-3.725, 0.07, -5)
+mesh = SubResource("BoxMesh_23")
 
 [node name="FoyerEastWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(4, 2, -5)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/FoyerEastWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_18")
+mesh = SubResource("BoxMesh_21")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/FoyerEastWall"]
-shape = SubResource("BoxShape3D_19")
+shape = SubResource("BoxShape3D_22")
+
+[node name="FoyerEastWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(3.725, 0.07, -5)
+mesh = SubResource("BoxMesh_23")
+
+[node name="FoyerEastWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(4.275, 0.07, -5)
+mesh = SubResource("BoxMesh_23")
 
 [node name="ElevatorDoorsBack" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 1.5, -0.27)
-mesh = SubResource("BoxMesh_20")
+mesh = SubResource("BoxMesh_24")
 
 [node name="FoyerStrip" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 3.96, -5)
-mesh = SubResource("BoxMesh_21")
+mesh = SubResource("BoxMesh_25")
 
 [node name="CasinoFloor" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, -0.25, -25)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoFloor" groups=["tex_f4_red_carpet"]]
-mesh = SubResource("BoxMesh_22")
+mesh = SubResource("BoxMesh_26")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoFloor"]
-shape = SubResource("BoxShape3D_23")
+shape = SubResource("BoxShape3D_27")
 
 [node name="CasinoCeiling" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 6.15, -25)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoCeiling"]
-mesh = SubResource("BoxMesh_24")
+mesh = SubResource("BoxMesh_28")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoCeiling"]
-shape = SubResource("BoxShape3D_25")
+shape = SubResource("BoxShape3D_29")
+
+[node name="CasinoRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-12.444, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-8.889, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-5.333, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-1.778, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib5" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(1.778, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib6" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(5.333, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib7" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(8.889, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
+
+[node name="CasinoRib8" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(12.444, 5.89, -25)
+mesh = SubResource("BoxMesh_30")
 
 [node name="CasinoSouthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-9.625, 3, -10)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoSouthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_26")
+mesh = SubResource("BoxMesh_31")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoSouthWall"]
-shape = SubResource("BoxShape3D_27")
+shape = SubResource("BoxShape3D_32")
+
+[node name="CasinoSouthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-9.625, 0.07, -10.275)
+mesh = SubResource("BoxMesh_33")
+
+[node name="CasinoSouthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-9.625, 0.07, -9.725)
+mesh = SubResource("BoxMesh_33")
 
 [node name="CasinoSouthWallLintel" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 4.8, -10)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoSouthWallLintel" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_28")
+mesh = SubResource("BoxMesh_34")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoSouthWallLintel"]
-shape = SubResource("BoxShape3D_29")
+shape = SubResource("BoxShape3D_35")
 
 [node name="CasinoSouthWall2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(9.625, 3, -10)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoSouthWall2" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_26")
+mesh = SubResource("BoxMesh_31")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoSouthWall2"]
-shape = SubResource("BoxShape3D_27")
+shape = SubResource("BoxShape3D_32")
+
+[node name="CasinoSouthWallTrim3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(9.625, 0.07, -10.275)
+mesh = SubResource("BoxMesh_33")
+
+[node name="CasinoSouthWallTrim4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(9.625, 0.07, -9.725)
+mesh = SubResource("BoxMesh_33")
 
 [node name="CasinoWestWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-16, 3, -34.125)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoWestWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_30")
+mesh = SubResource("BoxMesh_36")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoWestWall"]
-shape = SubResource("BoxShape3D_31")
+shape = SubResource("BoxShape3D_37")
+
+[node name="CasinoWestWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-16.275, 0.07, -34.125)
+mesh = SubResource("BoxMesh_38")
+
+[node name="CasinoWestWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-15.725, 0.07, -34.125)
+mesh = SubResource("BoxMesh_38")
 
 [node name="CasinoWestWallLintel" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-16, 4.6, -25)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoWestWallLintel" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_32")
+mesh = SubResource("BoxMesh_39")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoWestWallLintel"]
-shape = SubResource("BoxShape3D_33")
+shape = SubResource("BoxShape3D_40")
 
 [node name="CasinoWestWall2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-16, 3, -15.875)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoWestWall2" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_30")
+mesh = SubResource("BoxMesh_36")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoWestWall2"]
-shape = SubResource("BoxShape3D_31")
+shape = SubResource("BoxShape3D_37")
+
+[node name="CasinoWestWallTrim3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-16.275, 0.07, -15.875)
+mesh = SubResource("BoxMesh_38")
+
+[node name="CasinoWestWallTrim4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-15.725, 0.07, -15.875)
+mesh = SubResource("BoxMesh_38")
 
 [node name="CasinoEastWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(16, 3, -34.125)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoEastWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_30")
+mesh = SubResource("BoxMesh_36")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoEastWall"]
-shape = SubResource("BoxShape3D_31")
+shape = SubResource("BoxShape3D_37")
+
+[node name="CasinoEastWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(15.725, 0.07, -34.125)
+mesh = SubResource("BoxMesh_38")
+
+[node name="CasinoEastWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(16.275, 0.07, -34.125)
+mesh = SubResource("BoxMesh_38")
 
 [node name="CasinoEastWallLintel" type="StaticBody3D" parent="Geometry"]
 position = Vector3(16, 4.5, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoEastWallLintel" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_34")
+mesh = SubResource("BoxMesh_41")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoEastWallLintel"]
-shape = SubResource("BoxShape3D_35")
+shape = SubResource("BoxShape3D_42")
 
 [node name="CasinoEastWall2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(16, 3, -16.875)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoEastWall2" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_36")
+mesh = SubResource("BoxMesh_43")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoEastWall2"]
-shape = SubResource("BoxShape3D_37")
+shape = SubResource("BoxShape3D_44")
+
+[node name="CasinoEastWallTrim3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(15.725, 0.07, -16.875)
+mesh = SubResource("BoxMesh_45")
+
+[node name="CasinoEastWallTrim4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(16.275, 0.07, -16.875)
+mesh = SubResource("BoxMesh_45")
 
 [node name="CasinoNorthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-9.625, 3, -40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoNorthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_26")
+mesh = SubResource("BoxMesh_31")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoNorthWall"]
-shape = SubResource("BoxShape3D_27")
+shape = SubResource("BoxShape3D_32")
+
+[node name="CasinoNorthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-9.625, 0.07, -40.275)
+mesh = SubResource("BoxMesh_33")
+
+[node name="CasinoNorthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-9.625, 0.07, -39.725)
+mesh = SubResource("BoxMesh_33")
 
 [node name="CasinoNorthWallLintel" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 4.9, -40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoNorthWallLintel" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_38")
+mesh = SubResource("BoxMesh_46")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoNorthWallLintel"]
-shape = SubResource("BoxShape3D_39")
+shape = SubResource("BoxShape3D_47")
 
 [node name="CasinoNorthWall2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(9.625, 3, -40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoNorthWall2" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_26")
+mesh = SubResource("BoxMesh_31")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoNorthWall2"]
-shape = SubResource("BoxShape3D_27")
+shape = SubResource("BoxShape3D_32")
+
+[node name="CasinoNorthWallTrim3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(9.625, 0.07, -40.275)
+mesh = SubResource("BoxMesh_33")
+
+[node name="CasinoNorthWallTrim4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(9.625, 0.07, -39.725)
+mesh = SubResource("BoxMesh_33")
 
 [node name="CasinoTable" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-9, 0.425, -17)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoTable"]
-mesh = SubResource("BoxMesh_40")
+mesh = SubResource("BoxMesh_48")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoTable"]
-shape = SubResource("BoxShape3D_41")
+shape = SubResource("BoxShape3D_49")
 
 [node name="TableFelt" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_casino_felt"]]
 position = Vector3(-9, 0.875, -17)
-mesh = SubResource("BoxMesh_42")
+mesh = SubResource("BoxMesh_50")
 
 [node name="TableRim" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-9, 0.885, -17.9)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="TableRim2" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-9, 0.885, -16.1)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="CasinoTable2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(9, 0.425, -17)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoTable2"]
-mesh = SubResource("BoxMesh_40")
+mesh = SubResource("BoxMesh_48")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoTable2"]
-shape = SubResource("BoxShape3D_41")
+shape = SubResource("BoxShape3D_49")
 
 [node name="TableFelt2" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_casino_felt"]]
 position = Vector3(9, 0.875, -17)
-mesh = SubResource("BoxMesh_42")
+mesh = SubResource("BoxMesh_50")
 
 [node name="TableRim3" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(9, 0.885, -17.9)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="TableRim4" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(9, 0.885, -16.1)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="CasinoTable3" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-9, 0.425, -33)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoTable3"]
-mesh = SubResource("BoxMesh_40")
+mesh = SubResource("BoxMesh_48")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoTable3"]
-shape = SubResource("BoxShape3D_41")
+shape = SubResource("BoxShape3D_49")
 
 [node name="TableFelt3" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_casino_felt"]]
 position = Vector3(-9, 0.875, -33)
-mesh = SubResource("BoxMesh_42")
+mesh = SubResource("BoxMesh_50")
 
 [node name="TableRim5" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-9, 0.885, -33.9)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="TableRim6" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-9, 0.885, -32.1)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="CasinoTable4" type="StaticBody3D" parent="Geometry"]
 position = Vector3(9, 0.425, -33)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/CasinoTable4"]
-mesh = SubResource("BoxMesh_40")
+mesh = SubResource("BoxMesh_48")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/CasinoTable4"]
-shape = SubResource("BoxShape3D_41")
+shape = SubResource("BoxShape3D_49")
 
 [node name="TableFelt4" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_casino_felt"]]
 position = Vector3(9, 0.875, -33)
-mesh = SubResource("BoxMesh_42")
+mesh = SubResource("BoxMesh_50")
 
 [node name="TableRim7" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(9, 0.885, -33.9)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="TableRim8" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(9, 0.885, -32.1)
-mesh = SubResource("BoxMesh_43")
+mesh = SubResource("BoxMesh_51")
 
 [node name="RouletteBase" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 0.45, -25)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/RouletteBase"]
-mesh = SubResource("CylinderMesh_44")
+mesh = SubResource("CylinderMesh_52")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/RouletteBase"]
-shape = SubResource("CylinderShape3D_45")
+shape = SubResource("CylinderShape3D_53")
 
 [node name="RouletteFelt" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_casino_felt"]]
 position = Vector3(0, 0.925, -25)
-mesh = SubResource("CylinderMesh_46")
+mesh = SubResource("CylinderMesh_54")
 
 [node name="RouletteWheel" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 1, -25)
-mesh = SubResource("CylinderMesh_47")
+mesh = SubResource("CylinderMesh_55")
 
 [node name="GoldPillar" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-4.5, 3, -17)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/GoldPillar"]
-mesh = SubResource("BoxMesh_48")
+mesh = SubResource("BoxMesh_56")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/GoldPillar"]
-shape = SubResource("BoxShape3D_49")
+shape = SubResource("BoxShape3D_57")
 
 [node name="PillarTrim" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 2.675, -17)
-mesh = SubResource("BoxMesh_50")
+mesh = SubResource("BoxMesh_58")
 
 [node name="PillarTrim2" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 0.1, -17)
-mesh = SubResource("BoxMesh_51")
+mesh = SubResource("BoxMesh_59")
 
 [node name="PillarTrim3" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 5.85, -17)
-mesh = SubResource("BoxMesh_52")
+mesh = SubResource("BoxMesh_60")
 
 [node name="GoldPillar2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(4.5, 3, -17)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/GoldPillar2"]
-mesh = SubResource("BoxMesh_48")
+mesh = SubResource("BoxMesh_56")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/GoldPillar2"]
-shape = SubResource("BoxShape3D_49")
+shape = SubResource("BoxShape3D_57")
 
 [node name="PillarTrim4" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 2.675, -17)
-mesh = SubResource("BoxMesh_50")
+mesh = SubResource("BoxMesh_58")
 
 [node name="PillarTrim5" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 0.1, -17)
-mesh = SubResource("BoxMesh_51")
+mesh = SubResource("BoxMesh_59")
 
 [node name="PillarTrim6" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 5.85, -17)
-mesh = SubResource("BoxMesh_52")
+mesh = SubResource("BoxMesh_60")
 
 [node name="GoldPillar3" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-4.5, 3, -33)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/GoldPillar3"]
-mesh = SubResource("BoxMesh_48")
+mesh = SubResource("BoxMesh_56")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/GoldPillar3"]
-shape = SubResource("BoxShape3D_49")
+shape = SubResource("BoxShape3D_57")
 
 [node name="PillarTrim7" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 2.675, -33)
-mesh = SubResource("BoxMesh_50")
+mesh = SubResource("BoxMesh_58")
 
 [node name="PillarTrim8" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 0.1, -33)
-mesh = SubResource("BoxMesh_51")
+mesh = SubResource("BoxMesh_59")
 
 [node name="PillarTrim9" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-4.5, 5.85, -33)
-mesh = SubResource("BoxMesh_52")
+mesh = SubResource("BoxMesh_60")
 
 [node name="GoldPillar4" type="StaticBody3D" parent="Geometry"]
 position = Vector3(4.5, 3, -33)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/GoldPillar4"]
-mesh = SubResource("BoxMesh_48")
+mesh = SubResource("BoxMesh_56")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/GoldPillar4"]
-shape = SubResource("BoxShape3D_49")
+shape = SubResource("BoxShape3D_57")
 
 [node name="PillarTrim10" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 2.675, -33)
-mesh = SubResource("BoxMesh_50")
+mesh = SubResource("BoxMesh_58")
 
 [node name="PillarTrim11" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 0.1, -33)
-mesh = SubResource("BoxMesh_51")
+mesh = SubResource("BoxMesh_59")
 
 [node name="PillarTrim12" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(4.5, 5.85, -33)
-mesh = SubResource("BoxMesh_52")
+mesh = SubResource("BoxMesh_60")
 
 [node name="SlotMachine" type="StaticBody3D" parent="Geometry"]
 position = Vector3(15.175, 0.95, -12.2)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SlotMachine"]
-mesh = SubResource("BoxMesh_53")
+mesh = SubResource("BoxMesh_61")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SlotMachine"]
-shape = SubResource("BoxShape3D_54")
+shape = SubResource("BoxShape3D_62")
 
 [node name="SlotScreen" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(14.575, 1.3, -12.2)
-mesh = SubResource("BoxMesh_55")
+mesh = SubResource("BoxMesh_63")
 
 [node name="SlotTop" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(15.15, 1.95, -12.2)
-mesh = SubResource("BoxMesh_56")
+mesh = SubResource("BoxMesh_64")
 
 [node name="SlotMachine2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(15.175, 0.95, -14.2)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SlotMachine2"]
-mesh = SubResource("BoxMesh_53")
+mesh = SubResource("BoxMesh_61")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SlotMachine2"]
-shape = SubResource("BoxShape3D_54")
+shape = SubResource("BoxShape3D_62")
 
 [node name="SlotScreen2" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(14.575, 1.3, -14.2)
-mesh = SubResource("BoxMesh_55")
+mesh = SubResource("BoxMesh_63")
 
 [node name="SlotTop2" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(15.15, 1.95, -14.2)
-mesh = SubResource("BoxMesh_56")
+mesh = SubResource("BoxMesh_64")
 
 [node name="SlotMachine3" type="StaticBody3D" parent="Geometry"]
 position = Vector3(15.175, 0.95, -16.2)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SlotMachine3"]
-mesh = SubResource("BoxMesh_53")
+mesh = SubResource("BoxMesh_61")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SlotMachine3"]
-shape = SubResource("BoxShape3D_54")
+shape = SubResource("BoxShape3D_62")
 
 [node name="SlotScreen3" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(14.575, 1.3, -16.2)
-mesh = SubResource("BoxMesh_55")
+mesh = SubResource("BoxMesh_63")
 
 [node name="SlotTop3" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(15.15, 1.95, -16.2)
-mesh = SubResource("BoxMesh_56")
+mesh = SubResource("BoxMesh_64")
 
 [node name="Chandelier" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 5.9, -25)
-mesh = SubResource("BoxMesh_57")
+mesh = SubResource("BoxMesh_65")
 
 [node name="Chandelier2" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 5.9, -25)
-mesh = SubResource("BoxMesh_58")
+mesh = SubResource("BoxMesh_66")
 
 [node name="VelvetRope" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 0.9, -37.55)
-mesh = SubResource("BoxMesh_59")
+mesh = SubResource("BoxMesh_67")
 
 [node name="VipLoungeFloor" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-23, -0.25, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VipLoungeFloor" groups=["tex_f4_red_carpet"]]
-mesh = SubResource("BoxMesh_60")
+mesh = SubResource("BoxMesh_68")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VipLoungeFloor"]
-shape = SubResource("BoxShape3D_61")
+shape = SubResource("BoxShape3D_69")
 
 [node name="VipLoungeCeiling" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-23, 4.65, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VipLoungeCeiling"]
-mesh = SubResource("BoxMesh_62")
+mesh = SubResource("BoxMesh_70")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VipLoungeCeiling"]
-shape = SubResource("BoxShape3D_63")
+shape = SubResource("BoxShape3D_71")
+
+[node name="VipLoungeRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 4.39, -30.8)
+mesh = SubResource("BoxMesh_72")
+
+[node name="VipLoungeRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 4.39, -27.6)
+mesh = SubResource("BoxMesh_72")
+
+[node name="VipLoungeRib3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 4.39, -24.4)
+mesh = SubResource("BoxMesh_72")
+
+[node name="VipLoungeRib4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 4.39, -21.2)
+mesh = SubResource("BoxMesh_72")
 
 [node name="LoungeWestWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-30, 2.25, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeWestWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_64")
+mesh = SubResource("BoxMesh_73")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeWestWall"]
-shape = SubResource("BoxShape3D_65")
+shape = SubResource("BoxShape3D_74")
+
+[node name="LoungeWestWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-30.275, 0.07, -26)
+mesh = SubResource("BoxMesh_75")
+
+[node name="LoungeWestWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-29.725, 0.07, -26)
+mesh = SubResource("BoxMesh_75")
 
 [node name="LoungeNorthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-23, 2.25, -34)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeNorthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_66")
+mesh = SubResource("BoxMesh_76")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeNorthWall"]
-shape = SubResource("BoxShape3D_67")
+shape = SubResource("BoxShape3D_77")
+
+[node name="LoungeNorthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 0.07, -34.275)
+mesh = SubResource("BoxMesh_78")
+
+[node name="LoungeNorthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 0.07, -33.725)
+mesh = SubResource("BoxMesh_78")
 
 [node name="LoungeSouthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-23, 2.25, -18)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeSouthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_66")
+mesh = SubResource("BoxMesh_76")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeSouthWall"]
-shape = SubResource("BoxShape3D_67")
+shape = SubResource("BoxShape3D_77")
+
+[node name="LoungeSouthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 0.07, -18.275)
+mesh = SubResource("BoxMesh_78")
+
+[node name="LoungeSouthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-23, 0.07, -17.725)
+mesh = SubResource("BoxMesh_78")
 
 [node name="BarCounter" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-26.5, 0.55, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/BarCounter"]
-mesh = SubResource("BoxMesh_68")
+mesh = SubResource("BoxMesh_79")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/BarCounter"]
-shape = SubResource("BoxShape3D_69")
+shape = SubResource("BoxShape3D_80")
 
 [node name="BarTop" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-26.5, 1.13, -26)
-mesh = SubResource("BoxMesh_70")
+mesh = SubResource("BoxMesh_81")
 
 [node name="BarShelf" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-29.525, 2.2, -26)
-mesh = SubResource("BoxMesh_71")
+mesh = SubResource("BoxMesh_82")
 
 [node name="LoungeSofa" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-20.25, 0.35, -32.2)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeSofa" groups=["tex_f4_casino_felt"]]
-mesh = SubResource("BoxMesh_72")
+mesh = SubResource("BoxMesh_83")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeSofa"]
-shape = SubResource("BoxShape3D_73")
+shape = SubResource("BoxShape3D_84")
 
 [node name="LoungeSofa2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-20.25, 0.35, -19.8)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeSofa2" groups=["tex_f4_casino_felt"]]
-mesh = SubResource("BoxMesh_72")
+mesh = SubResource("BoxMesh_83")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeSofa2"]
-shape = SubResource("BoxShape3D_73")
+shape = SubResource("BoxShape3D_84")
 
 [node name="LoungeTable" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-20.25, 0.25, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/LoungeTable"]
-mesh = SubResource("BoxMesh_74")
+mesh = SubResource("BoxMesh_85")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/LoungeTable"]
-shape = SubResource("BoxShape3D_75")
+shape = SubResource("BoxShape3D_86")
 
 [node name="LoungeStrip" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-23, 4.46, -26)
-mesh = SubResource("BoxMesh_76")
+mesh = SubResource("BoxMesh_87")
 
 [node name="SecurityRoomFloor" type="StaticBody3D" parent="Geometry"]
 position = Vector3(22, -0.25, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SecurityRoomFloor" groups=["tex_f4_red_carpet"]]
-mesh = SubResource("BoxMesh_77")
+mesh = SubResource("BoxMesh_88")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SecurityRoomFloor"]
-shape = SubResource("BoxShape3D_78")
+shape = SubResource("BoxShape3D_89")
 
 [node name="SecurityRoomCeiling" type="StaticBody3D" parent="Geometry"]
 position = Vector3(22, 4.15, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SecurityRoomCeiling"]
-mesh = SubResource("BoxMesh_79")
+mesh = SubResource("BoxMesh_90")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SecurityRoomCeiling"]
-shape = SubResource("BoxShape3D_80")
+shape = SubResource("BoxShape3D_91")
+
+[node name="SecurityRoomRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 3.89, -29)
+mesh = SubResource("BoxMesh_92")
+
+[node name="SecurityRoomRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 3.89, -26)
+mesh = SubResource("BoxMesh_92")
+
+[node name="SecurityRoomRib3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 3.89, -23)
+mesh = SubResource("BoxMesh_92")
 
 [node name="SecurityEastWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(28, 2, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SecurityEastWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_81")
+mesh = SubResource("BoxMesh_93")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SecurityEastWall"]
-shape = SubResource("BoxShape3D_82")
+shape = SubResource("BoxShape3D_94")
+
+[node name="SecurityEastWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(27.725, 0.07, -26)
+mesh = SubResource("BoxMesh_95")
+
+[node name="SecurityEastWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(28.275, 0.07, -26)
+mesh = SubResource("BoxMesh_95")
 
 [node name="SecurityNorthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(22, 2, -32)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SecurityNorthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_83")
+mesh = SubResource("BoxMesh_96")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SecurityNorthWall"]
-shape = SubResource("BoxShape3D_84")
+shape = SubResource("BoxShape3D_97")
+
+[node name="SecurityNorthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 0.07, -32.275)
+mesh = SubResource("BoxMesh_98")
+
+[node name="SecurityNorthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 0.07, -31.725)
+mesh = SubResource("BoxMesh_98")
 
 [node name="SecuritySouthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(22, 2, -20)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/SecuritySouthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_83")
+mesh = SubResource("BoxMesh_96")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/SecuritySouthWall"]
-shape = SubResource("BoxShape3D_84")
+shape = SubResource("BoxShape3D_97")
+
+[node name="SecuritySouthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 0.07, -20.275)
+mesh = SubResource("BoxMesh_98")
+
+[node name="SecuritySouthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(22, 0.07, -19.725)
+mesh = SubResource("BoxMesh_98")
 
 [node name="MonitorDesk" type="StaticBody3D" parent="Geometry"]
 position = Vector3(26.5, 0.45, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/MonitorDesk"]
-mesh = SubResource("BoxMesh_85")
+mesh = SubResource("BoxMesh_99")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/MonitorDesk"]
-shape = SubResource("BoxShape3D_86")
+shape = SubResource("BoxShape3D_100")
 
 [node name="MonitorWall" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(27.725, 2.3, -26)
-mesh = SubResource("BoxMesh_87")
+mesh = SubResource("BoxMesh_101")
 
 [node name="Lockers" type="StaticBody3D" parent="Geometry"]
 position = Vector3(19, 1.1, -31.475)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/Lockers"]
-mesh = SubResource("BoxMesh_88")
+mesh = SubResource("BoxMesh_102")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/Lockers"]
-shape = SubResource("BoxShape3D_89")
+shape = SubResource("BoxShape3D_103")
 
 [node name="WeaponCrate" type="StaticBody3D" parent="Geometry"]
 position = Vector3(20.75, 0.5, -23.4)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/WeaponCrate"]
-mesh = SubResource("BoxMesh_90")
+mesh = SubResource("BoxMesh_104")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/WeaponCrate"]
-shape = SubResource("BoxShape3D_91")
+shape = SubResource("BoxShape3D_105")
 
 [node name="VaultCorridorFloor" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, -0.25, -47)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultCorridorFloor" groups=["tex_f4_red_carpet"]]
-mesh = SubResource("BoxMesh_92")
+mesh = SubResource("BoxMesh_106")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultCorridorFloor"]
-shape = SubResource("BoxShape3D_93")
+shape = SubResource("BoxShape3D_107")
 
 [node name="VaultCorridorCeiling" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 4.65, -47)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultCorridorCeiling"]
-mesh = SubResource("BoxMesh_94")
+mesh = SubResource("BoxMesh_108")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultCorridorCeiling"]
-shape = SubResource("BoxShape3D_95")
+shape = SubResource("BoxShape3D_109")
+
+[node name="VaultCorridorRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 4.39, -50.5)
+mesh = SubResource("BoxMesh_17")
+
+[node name="VaultCorridorRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 4.39, -47)
+mesh = SubResource("BoxMesh_17")
+
+[node name="VaultCorridorRib3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 4.39, -43.5)
+mesh = SubResource("BoxMesh_17")
 
 [node name="VaultWestWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-4, 2.25, -47)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultWestWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_96")
+mesh = SubResource("BoxMesh_110")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultWestWall"]
-shape = SubResource("BoxShape3D_97")
+shape = SubResource("BoxShape3D_111")
+
+[node name="VaultWestWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-4.275, 0.07, -47)
+mesh = SubResource("BoxMesh_112")
+
+[node name="VaultWestWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-3.725, 0.07, -47)
+mesh = SubResource("BoxMesh_112")
 
 [node name="VaultEastWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(4, 2.25, -47)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultEastWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_96")
+mesh = SubResource("BoxMesh_110")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultEastWall"]
-shape = SubResource("BoxShape3D_97")
+shape = SubResource("BoxShape3D_111")
+
+[node name="VaultEastWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(3.725, 0.07, -47)
+mesh = SubResource("BoxMesh_112")
+
+[node name="VaultEastWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(4.275, 0.07, -47)
+mesh = SubResource("BoxMesh_112")
 
 [node name="VaultNorthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-3.125, 2.25, -54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultNorthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_98")
+mesh = SubResource("BoxMesh_113")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultNorthWall"]
-shape = SubResource("BoxShape3D_99")
+shape = SubResource("BoxShape3D_114")
+
+[node name="VaultNorthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-3.125, 0.07, -54.275)
+mesh = SubResource("BoxMesh_115")
+
+[node name="VaultNorthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-3.125, 0.07, -53.725)
+mesh = SubResource("BoxMesh_115")
 
 [node name="VaultNorthWallLintel" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 3.85, -54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultNorthWallLintel" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_100")
+mesh = SubResource("BoxMesh_116")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultNorthWallLintel"]
-shape = SubResource("BoxShape3D_101")
+shape = SubResource("BoxShape3D_117")
 
 [node name="VaultNorthWall2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(3.125, 2.25, -54)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultNorthWall2" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_98")
+mesh = SubResource("BoxMesh_113")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultNorthWall2"]
-shape = SubResource("BoxShape3D_99")
+shape = SubResource("BoxShape3D_114")
+
+[node name="VaultNorthWallTrim3" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(3.125, 0.07, -54.275)
+mesh = SubResource("BoxMesh_115")
+
+[node name="VaultNorthWallTrim4" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(3.125, 0.07, -53.725)
+mesh = SubResource("BoxMesh_115")
 
 [node name="VaultCover" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-3.075, 0.6, -45.5)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultCover"]
-mesh = SubResource("BoxMesh_102")
+mesh = SubResource("BoxMesh_118")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultCover"]
-shape = SubResource("BoxShape3D_103")
+shape = SubResource("BoxShape3D_119")
 
 [node name="VaultCover2" type="StaticBody3D" parent="Geometry"]
 position = Vector3(3.075, 0.6, -48.5)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/VaultCover2"]
-mesh = SubResource("BoxMesh_102")
+mesh = SubResource("BoxMesh_118")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/VaultCover2"]
-shape = SubResource("BoxShape3D_103")
+shape = SubResource("BoxShape3D_119")
 
 [node name="VaultStripL" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(-3.725, 3.55, -47)
-mesh = SubResource("BoxMesh_104")
+mesh = SubResource("BoxMesh_120")
 
 [node name="VaultStripR" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(3.725, 3.55, -47)
-mesh = SubResource("BoxMesh_104")
+mesh = SubResource("BoxMesh_120")
 
 [node name="DoorWarn" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 3.45, -53.72)
-mesh = SubResource("BoxMesh_105")
+mesh = SubResource("BoxMesh_121")
 
 [node name="ExitAlcoveFloor" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, -0.25, -58)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/ExitAlcoveFloor" groups=["tex_f4_red_carpet"]]
-mesh = SubResource("BoxMesh_106")
+mesh = SubResource("BoxMesh_122")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/ExitAlcoveFloor"]
-shape = SubResource("BoxShape3D_107")
+shape = SubResource("BoxShape3D_123")
 
 [node name="ExitAlcoveCeiling" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 3.75, -58)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/ExitAlcoveCeiling"]
-mesh = SubResource("BoxMesh_108")
+mesh = SubResource("BoxMesh_124")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/ExitAlcoveCeiling"]
-shape = SubResource("BoxShape3D_109")
+shape = SubResource("BoxShape3D_125")
+
+[node name="ExitAlcoveRib" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 3.49, -59.333)
+mesh = SubResource("BoxMesh_126")
+
+[node name="ExitAlcoveRib2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 3.49, -56.667)
+mesh = SubResource("BoxMesh_126")
 
 [node name="AlcoveWestWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(-3, 1.8, -58)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/AlcoveWestWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_110")
+mesh = SubResource("BoxMesh_127")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/AlcoveWestWall"]
-shape = SubResource("BoxShape3D_111")
+shape = SubResource("BoxShape3D_128")
+
+[node name="AlcoveWestWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-3.275, 0.07, -58)
+mesh = SubResource("BoxMesh_129")
+
+[node name="AlcoveWestWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(-2.725, 0.07, -58)
+mesh = SubResource("BoxMesh_129")
 
 [node name="AlcoveEastWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(3, 1.8, -58)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/AlcoveEastWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_110")
+mesh = SubResource("BoxMesh_127")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/AlcoveEastWall"]
-shape = SubResource("BoxShape3D_111")
+shape = SubResource("BoxShape3D_128")
+
+[node name="AlcoveEastWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(2.725, 0.07, -58)
+mesh = SubResource("BoxMesh_129")
+
+[node name="AlcoveEastWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(3.275, 0.07, -58)
+mesh = SubResource("BoxMesh_129")
 
 [node name="AlcoveNorthWall" type="StaticBody3D" parent="Geometry"]
 position = Vector3(0, 1.8, -62)
 
 [node name="Mesh" type="MeshInstance3D" parent="Geometry/AlcoveNorthWall" groups=["tex_f4_vip_wall"]]
-mesh = SubResource("BoxMesh_112")
+mesh = SubResource("BoxMesh_130")
 
 [node name="Shape" type="CollisionShape3D" parent="Geometry/AlcoveNorthWall"]
-shape = SubResource("BoxShape3D_113")
+shape = SubResource("BoxShape3D_131")
+
+[node name="AlcoveNorthWallTrim" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 0.07, -62.275)
+mesh = SubResource("BoxMesh_132")
+
+[node name="AlcoveNorthWallTrim2" type="MeshInstance3D" parent="Geometry"]
+position = Vector3(0, 0.07, -61.725)
+mesh = SubResource("BoxMesh_132")
 
 [node name="ElevatorDoors" type="MeshInstance3D" parent="Geometry" groups=["tex_f4_vip_wall"]]
 position = Vector3(0, 1.5, -61.715)
-mesh = SubResource("BoxMesh_114")
+mesh = SubResource("BoxMesh_133")
 
 [node name="ElevatorFrameGlow" type="MeshInstance3D" parent="Geometry"]
 position = Vector3(0, 3.1, -61.715)
-mesh = SubResource("BoxMesh_115")
+mesh = SubResource("BoxMesh_134")
 
 [node name="FoyerLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(0, 3.4, -5)
@@ -1228,6 +1585,9 @@ light_energy = 1.4
 omni_range = 8
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="CasinoLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(-9, 5.3, -17)
@@ -1236,6 +1596,9 @@ light_energy = 1.6
 omni_range = 12
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="CasinoLight2" type="OmniLight3D" parent="Lights"]
 position = Vector3(9, 5.3, -17)
@@ -1244,6 +1607,9 @@ light_energy = 1.4
 omni_range = 12
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="CasinoLight3" type="OmniLight3D" parent="Lights"]
 position = Vector3(-9, 5.3, -33)
@@ -1252,6 +1618,9 @@ light_energy = 1.4
 omni_range = 12
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="CasinoLight4" type="OmniLight3D" parent="Lights"]
 position = Vector3(9, 5.3, -33)
@@ -1260,6 +1629,9 @@ light_energy = 1.6
 omni_range = 12
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="RouletteLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(0, 4.5, -25)
@@ -1268,6 +1640,9 @@ light_energy = 1.8
 omni_range = 10
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="LoungeLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(-23, 4, -26)
@@ -1276,6 +1651,9 @@ light_energy = 1.5
 omni_range = 11
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="BarLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(-28, 3, -26)
@@ -1284,6 +1662,9 @@ light_energy = 1.2
 omni_range = 7
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="SecurityLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(22, 3.5, -26)
@@ -1292,6 +1673,9 @@ light_energy = 1.4
 omni_range = 10
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="VaultLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(0, 4, -44)
@@ -1300,6 +1684,9 @@ light_energy = 1.4
 omni_range = 9
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="VaultLight2" type="OmniLight3D" parent="Lights"]
 position = Vector3(0, 4, -51)
@@ -1308,6 +1695,9 @@ light_energy = 1.3
 omni_range = 8
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="AlcoveLight" type="OmniLight3D" parent="Lights"]
 position = Vector3(0, 3.1, -58)
@@ -1316,6 +1706,9 @@ light_energy = 1.3
 omni_range = 7
 omni_attenuation = 1.2
 shadow_enabled = false
+distance_fade_enabled = true
+distance_fade_begin = 16.0
+distance_fade_length = 8.0
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 position = Vector3(0, 0.05, -2)

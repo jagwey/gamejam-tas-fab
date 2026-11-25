@@ -20,10 +20,17 @@ var _time: float = 0.0
 
 
 func _ready() -> void:
+	_apply_light_fade()
 	_play_music("bgm_floor3_lab", "bgm_floor2_office")
 	GameManager.set_objective(OBJ_START)
 	_apply_textures(TEXTURES)
 	_setup_door(security_door, PUZZLE_PATH, DOOR_PROMPT)
+	_radio_later(1.5, "AYDIN", "aydin_visor",
+		"Komutanım... bu biyo-tanklar. Hücresel emme mimarisi BETA eldivenimle birebir aynı. Bu nasıl mümkün?", 7.0)
+	_radio_later(2.0, "GENERAL DEMİR", "general_portrait",
+		"Sana söylemem gereken bir şey var Aydın. BETA, Volkov'dan çalınan prototipin tersine mühendisliğiyle üretildi. Onun silahını taşıyorsun.", 8.0)
+	_radio_later(2.0, "AYDIN", "aydin_visor",
+		"Yani onu kendi icadıyla durduracağım. Biyometrik kilide ilerliyorum.", 5.0)
 	for light in get_tree().get_nodes_in_group("flicker_light"):
 		if light is Light3D and is_ancestor_of(light):
 			_flicker.append({"light": light, "base": (light as Light3D).light_energy,
@@ -74,6 +81,8 @@ func _setup_door(door: Node, puzzle_path: String, prompt: String) -> void:
 
 func _on_door_unlocked() -> void:
 	GameManager.set_objective(OBJ_EXIT)
+	GameManager.send_radio("GENERAL DEMİR", "general_portrait",
+		"Biyometrik kilit açık. Volkov'un VIP katı yukarıda — dikkatli ol, kanalımız izleniyor olabilir.", 5.5)
 
 
 ## Swaps the solid-colour fallback for a pixel texture on every mesh in `tex_<name>` groups, if the PNG exists.
@@ -106,3 +115,20 @@ func _apply_textures(specs: Dictionary) -> void:
 		for node in get_tree().get_nodes_in_group(group_name):
 			if node is GeometryInstance3D and is_ancestor_of(node):
 				(node as GeometryInstance3D).material_override = mat
+
+
+func _radio_later(delay: float, speaker: String, portrait: String, text: String, duration: float = 5.5) -> void:
+	await get_tree().create_timer(delay).timeout
+	if is_inside_tree():
+		GameManager.send_radio(speaker, portrait, text, duration)
+
+## Perf: distance-fade every OmniLight3D in the floor, including lights inside instanced
+## enemies / pickups / consoles that the level builder does not generate.
+func _apply_light_fade() -> void:
+	for found in find_children("*", "OmniLight3D", true, false):
+		var omni: OmniLight3D = found as OmniLight3D
+		if omni == null:
+			continue
+		omni.distance_fade_enabled = true
+		omni.distance_fade_begin = 16.0
+		omni.distance_fade_length = 8.0

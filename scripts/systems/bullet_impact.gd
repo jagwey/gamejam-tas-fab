@@ -1,10 +1,20 @@
 class_name BulletImpact
 extends Node3D
-## One-shot spark burst + light flash at a hit point. Frees itself.
+## Spark burst + light flash at a hit point. One-shot instances free themselves;
+## pooled instances (WeaponManager impact pool) just go idle and get re-armed via setup().
 
 const LIFETIME: float = 0.45
+const FLASH_TIME: float = 0.12
 const SPARK_COLOR: Color = Color(1.0, 0.78, 0.35, 1.0)
 const FLESH_COLOR: Color = Color(0.95, 0.12, 0.18, 1.0)
+
+static var _mat_spark: StandardMaterial3D = null
+static var _mat_flesh: StandardMaterial3D = null
+
+## When true the node is reused instead of freed at the end of its lifetime.
+var pooled: bool = false
+## True while the burst is playing.
+var active: bool = false
 
 @onready var sparks: CPUParticles3D = get_node_or_null("Sparks") as CPUParticles3D
 @onready var flash: OmniLight3D = get_node_or_null("Flash") as OmniLight3D
@@ -27,27 +37,58 @@ func _ready() -> void:
 
 
 func _apply() -> void:
+	_age = 0.0
+	active = true
+	visible = true
+	set_process(true)
 	var col: Color = FLESH_COLOR if _flesh else SPARK_COLOR
 	if sparks != null:
 		sparks.local_coords = false
 		sparks.direction = _normal
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.albedo_color = col
-		mat.emission_enabled = true
-		mat.emission = col
-		mat.emission_energy_multiplier = 3.0
-		sparks.material_override = mat
+		sparks.material_override = _shared_material(_flesh)
 		sparks.restart()
 		sparks.emitting = true
 	if flash != null:
 		flash.light_color = col
 		flash.light_energy = _flash_energy
+		flash.visible = true
+
+
+static func _shared_material(is_flesh: bool) -> StandardMaterial3D:
+	if is_flesh and _mat_flesh != null:
+		return _mat_flesh
+	if not is_flesh and _mat_spark != null:
+		return _mat_spark
+	var col: Color = FLESH_COLOR if is_flesh else SPARK_COLOR
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = col
+	mat.emission_enabled = true
+	mat.emission = col
+	mat.emission_energy_multiplier = 3.0
+	if is_flesh:
+		_mat_flesh = mat
+	else:
+		_mat_spark = mat
+	return mat
 
 
 func _process(delta: float) -> void:
 	_age += delta
 	if flash != null:
-		flash.light_energy = maxf(_flash_energy * (1.0 - _age / 0.12), 0.0)
+		flash.light_energy = maxf(_flash_energy * (1.0 - _age / FLASH_TIME), 0.0)
+		if _age >= FLASH_TIME:
+			flash.visible = false
 	if _age >= LIFETIME:
-		queue_free()
+		if pooled:
+			_go_idle()
+		else:
+			queue_free()
+
+
+func _go_idle() -> void:
+	active = false
+	visible = false
+	if sparks != null:
+		sparks.emitting = false
+	set_process(false)

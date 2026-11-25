@@ -127,6 +127,9 @@ class FullBuilder(SceneBuilder):
             "omni_range = %s" % f(rng),
             "omni_attenuation = 1.2",
             "shadow_enabled = false",
+            "distance_fade_enabled = true",
+            "distance_fade_begin = 16.0",
+            "distance_fade_length = 8.0",
         ], groups=groups)
 
     def marker(self, name: str, pos) -> None:

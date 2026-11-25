@@ -30,6 +30,7 @@ var _spawned_waves: Dictionary = {}
 var _reactor_lights: Array[Dictionary] = []
 var _beacon_lights: Array[Dictionary] = []
 var _time: float = 0.0
+var _rain: CPUParticles3D = null
 
 @onready var enemies_root: Node3D = get_node_or_null("Enemies") as Node3D
 @onready var interactables_root: Node3D = get_node_or_null("Interactables") as Node3D
@@ -42,8 +43,19 @@ func _ready() -> void:
 	_collect_lights("reactor_light", _reactor_lights)
 	_collect_lights("beacon_light", _beacon_lights)
 	_spawn_rain()
+	if not SettingsManager.settings_changed.is_connected(_on_settings_changed):
+		SettingsManager.settings_changed.connect(_on_settings_changed)
 	_spawn_console()
 	_spawn_boss()
+	_apply_light_fade()
+	_apply_light_fade.call_deferred()
+	_radio_later(1.5, "VİKTOR VOLKOV", "volkov_portrait",
+		"Sonunda yüz yüzeyiz, Aydın. Reaktör tam güçte — bu çatıdan yalnızca biri inecek.", 6.5)
+
+
+func _exit_tree() -> void:
+	if SettingsManager.settings_changed.is_connected(_on_settings_changed):
+		SettingsManager.settings_changed.disconnect(_on_settings_changed)
 
 
 func _process(delta: float) -> void:
@@ -121,6 +133,7 @@ func _on_boss_phase_changed(new_phase: int = 0, _a: Variant = null, _b: Variant 
 	if not WAVES.has(new_phase) or _spawned_waves.has(new_phase) or enemies_root == null:
 		return
 	_spawned_waves[new_phase] = true
+	_phase_radio(new_phase)
 	for entry in WAVES[new_phase]:
 		var scene: PackedScene = _load_scene(entry[0])
 		if scene == null:
@@ -138,6 +151,8 @@ func _on_boss_defeated(_a: Variant = null) -> void:
 		return
 	_defeated = true
 	GameManager.set_objective(OBJ_CONSOLE)
+	GameManager.send_radio("GENERAL DEMİR", "general_portrait",
+		"Volkov düştü! Reaktör konsolu açıldı Aydın — savunma sistemini kapat ve oradan çık!", 6.0)
 	if is_instance_valid(reactor_console):
 		if reactor_console.has_method("activate_console"):
 			reactor_console.call("activate_console")
@@ -161,7 +176,7 @@ func _spawn_rain() -> void:
 	var rain := CPUParticles3D.new()
 	rain.name = "Rain"
 	rain.position = _marker_position("RainOrigin", Vector3(0, 18, -32))
-	rain.amount = 900
+	rain.amount = _rain_amount()
 	rain.lifetime = 1.1
 	rain.preprocess = 1.0
 	rain.local_coords = false
@@ -173,14 +188,39 @@ func _spawn_rain() -> void:
 	rain.initial_velocity_min = 14.0
 	rain.initial_velocity_max = 18.0
 	var drop := BoxMesh.new()
-	drop.size = Vector3(0.02, 0.45, 0.02)
+	drop.size = Vector3(0.02, 0.75, 0.02)
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.albedo_color = Color(0.6, 0.75, 1.0, 0.35)
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	drop.material = mat
 	rain.mesh = drop
 	add_child(rain)
+	_rain = rain
+
+
+func _rain_amount() -> int:
+	return 60 if int(SettingsManager.graphics_quality) <= 0 else 160
+
+
+func _on_settings_changed() -> void:
+	if not is_instance_valid(_rain):
+		return
+	var wanted: int = _rain_amount()
+	if _rain.amount != wanted:
+		_rain.amount = wanted
+
+
+func _phase_radio(new_phase: int) -> void:
+	if new_phase == 2:
+		GameManager.send_radio("VİKTOR VOLKOV", "volkov_portrait",
+			"Hissediyor musun? Emdiğin her öz seni bana benzetiyor. Adamlarım, kuşatın onu!", 6.0)
+	elif new_phase == 3:
+		GameManager.send_radio("VİKTOR VOLKOV", "volkov_portrait",
+			"Reaktör çekirdeğini kendime bağladım! Ben artık BETA'nın ta kendisiyim!", 6.0)
+		GameManager.send_radio("AYDIN", "aydin_visor",
+			"O halde BETA'yı ben bitireceğim. Köyüm için, Volkov!", 5.0)
 
 
 func _collect_lights(group_name: String, into: Array[Dictionary]) -> void:
@@ -234,3 +274,20 @@ func _apply_textures(specs: Dictionary) -> void:
 		for node in get_tree().get_nodes_in_group(group_name):
 			if node is GeometryInstance3D and is_ancestor_of(node):
 				(node as GeometryInstance3D).material_override = mat
+
+
+func _radio_later(delay: float, speaker: String, portrait: String, text: String, duration: float = 5.5) -> void:
+	await get_tree().create_timer(delay).timeout
+	if is_inside_tree():
+		GameManager.send_radio(speaker, portrait, text, duration)
+
+## Perf: distance-fade every OmniLight3D in the floor, including lights inside instanced
+## enemies / pickups / consoles that the level builder does not generate.
+func _apply_light_fade() -> void:
+	for found in find_children("*", "OmniLight3D", true, false):
+		var omni: OmniLight3D = found as OmniLight3D
+		if omni == null:
+			continue
+		omni.distance_fade_enabled = true
+		omni.distance_fade_begin = 16.0
+		omni.distance_fade_length = 8.0

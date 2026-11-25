@@ -15,6 +15,9 @@ const IMPACT_SCENE_PATH: String = "res://scenes/weapons/bullet_impact.tscn"
 const SWITCH_DELAY: float = 0.14
 const MELEE_SWEEP_RADIUS: float = 0.9
 const MELEE_CONE_DOT: float = 0.45
+const IMPACT_POOL_SIZE: int = 16
+const KILL_PUNCH_TRAUMA: float = 0.06
+const TIER5_MELEE_LEECH: float = 6.0
 
 const WEAPON_PATHS: Array[String] = [
 	"res://scripts/resources/weapons/pistol.tres",
@@ -40,6 +43,9 @@ var _melee_cooldown: float = 0.0
 var _reload_timer: float = 0.0
 var _switch_timer: float = 0.0
 var _impact_scene: PackedScene = null
+var _impact_pool: Array[Node] = []
+var _impact_next: int = 0
+var _beta: BetaDeviceController = null
 
 
 func _ready() -> void:
@@ -117,6 +123,34 @@ func can_fire() -> bool:
 	return ws.is_melee or get_mag(current_weapon_id) > 0
 
 
+func _beta_device() -> BetaDeviceController:
+	if _beta != null and is_instance_valid(_beta):
+		return _beta
+	_beta = null
+	if player != null:
+		var b: Variant = player.get("beta_device") if "beta_device" in player else null
+		if b is BetaDeviceController:
+			_beta = b as BetaDeviceController
+		else:
+			_beta = player.get_node_or_null("BetaDeviceController") as BetaDeviceController
+	return _beta
+
+
+func get_damage_multiplier() -> float:
+	var b: BetaDeviceController = _beta_device()
+	return b.get_damage_multiplier() if b != null else 1.0
+
+
+func get_fire_rate_multiplier() -> float:
+	var b: BetaDeviceController = _beta_device()
+	return maxf(b.get_fire_rate_multiplier(), 0.1) if b != null else 1.0
+
+
+func get_reload_speed_multiplier() -> float:
+	var b: BetaDeviceController = _beta_device()
+	return maxf(b.get_reload_speed_multiplier(), 0.1) if b != null else 1.0
+
+
 # ------------------------------------------------------------------ actions
 
 ## Returns true if a shot/swing happened.
@@ -135,7 +169,8 @@ func fire() -> bool:
 			_sfx("sfx_dry_fire")
 		return false
 	_set_mag(current_weapon_id, mag - 1)
-	_cooldown = ws.fire_cooldown
+	_cooldown = ws.fire_cooldown / get_fire_rate_multiplier()
+	var dmg: float = ws.damage * get_damage_multiplier()
 
 	var origin: Vector3 = _aim_origin()
 	var forward: Vector3 = _aim_direction()
@@ -144,7 +179,7 @@ func fire() -> bool:
 	var any_kill: bool = false
 	for _i in maxi(ws.pellets, 1):
 		var dir: Vector3 = _apply_spread(forward, spread) if (ws.pellets > 1 or spread > 0.0) else forward
-		var result: Dictionary = _hitscan(origin, dir, ws.range_meters, ws.damage)
+		var result: Dictionary = _hitscan(origin, dir, ws.range_meters, dmg)
 		if bool(result.get("hit_enemy", false)):
 			any_hit = true
 		if bool(result.get("killed", false)):
@@ -158,6 +193,8 @@ func fire() -> bool:
 	weapon_fired.emit(ws.weapon_id)
 	if any_hit:
 		hit_confirmed.emit(any_kill)
+	if any_kill:
+		_kill_punch()
 	_emit_ammo()
 	if get_mag(current_weapon_id) <= 0 and get_reserve(current_weapon_id) > 0:
 		reload()
@@ -182,9 +219,9 @@ func reload() -> bool:
 	if mag >= ws.magazine_size or get_reserve(current_weapon_id) <= 0:
 		return false
 	is_reloading = true
-	_reload_timer = ws.reload_duration
+	_reload_timer = ws.reload_duration / get_reload_speed_multiplier()
 	_sfx(ws.reload_sfx)
-	reload_started.emit(ws.weapon_id, ws.reload_duration)
+	reload_started.emit(ws.weapon_id, _reload_timer)
 	return true
 
 
@@ -309,9 +346,10 @@ func _melee_attack(ws: WeaponStats) -> bool:
 	var forward: Vector3 = _aim_direction()
 	var hits: Array[Node] = _melee_sweep(origin, forward, ws.range_meters)
 	var any_kill: bool = false
+	var melee_dmg: float = ws.damage * get_damage_multiplier()
 	for target in hits:
 		if target.has_method("take_damage"):
-			var killed: Variant = target.call("take_damage", ws.damage, player)
+			var killed: Variant = target.call("take_damage", melee_dmg, player)
 			if killed is bool and bool(killed):
 				any_kill = true
 			_spawn_impact((target as Node3D).global_position + Vector3(0.0, 1.1, 0.0), -forward, true)
@@ -328,7 +366,25 @@ func _melee_attack(ws: WeaponStats) -> bool:
 	weapon_fired.emit(ws.weapon_id)
 	if not hits.is_empty():
 		hit_confirmed.emit(any_kill)
+	if any_kill:
+		_kill_punch()
+		_melee_leech()
 	return true
+
+
+## Subtle kill feedback: camera micro-punch.
+func _kill_punch() -> void:
+	if fps_camera != null:
+		fps_camera.add_trauma(KILL_PUNCH_TRAUMA)
+		fps_camera.add_recoil(0.35, 0.01)
+
+
+## Evolution tier 5: melee kills leech HP.
+func _melee_leech() -> void:
+	var b: BetaDeviceController = _beta_device()
+	if b == null or b.beta_tier < 5 or b.health_component == null:
+		return
+	b.health_component.heal(TIER5_MELEE_LEECH)
 
 
 ## Forgiving sweep: sphere overlap ahead + cone/LOS filter + center/offset rays fallback.
@@ -447,15 +503,41 @@ func _apply_spread(dir: Vector3, spread_deg: float) -> Vector3:
 func _spawn_impact(pos: Vector3, normal: Vector3, flesh: bool) -> void:
 	if _impact_scene == null or not is_inside_tree():
 		return
-	var inst: Node = _impact_scene.instantiate()
-	var parent: Node = get_tree().current_scene
-	if parent == null:
-		parent = get_tree().root
-	parent.add_child(inst)
+	var inst: Node = _acquire_impact()
+	if inst == null:
+		return
 	if inst is Node3D:
 		(inst as Node3D).global_position = pos + normal * 0.02
 	if inst.has_method("setup"):
 		inst.call("setup", normal, flesh)
+
+
+## Ring pool of IMPACT_POOL_SIZE impacts: idle ones first, otherwise the oldest is recycled.
+func _acquire_impact() -> Node:
+	var parent: Node = get_tree().current_scene
+	if parent == null:
+		parent = get_tree().root
+	# Drop entries freed by a scene change or reparented elsewhere.
+	var alive: Array[Node] = []
+	for n in _impact_pool:
+		if is_instance_valid(n) and n.get_parent() == parent:
+			alive.append(n)
+	if alive.size() != _impact_pool.size():
+		_impact_pool = alive
+		_impact_next = 0
+	for n in _impact_pool:
+		if "active" in n and not bool(n.get("active")):
+			return n
+	if _impact_pool.size() < IMPACT_POOL_SIZE:
+		var inst: Node = _impact_scene.instantiate()
+		if "pooled" in inst:
+			inst.set("pooled", true)
+		parent.add_child(inst)
+		_impact_pool.append(inst)
+		return inst
+	var reused: Node = _impact_pool[_impact_next % _impact_pool.size()]
+	_impact_next = (_impact_next + 1) % _impact_pool.size()
+	return reused
 
 
 func _finish_reload() -> void:

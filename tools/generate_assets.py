@@ -13,37 +13,70 @@ BAYER = ((0, 8, 2, 10), (12, 4, 14, 6), (3, 11, 1, 9), (15, 7, 13, 5))
 
 
 class Art:
-    def __init__(self, size, bg=(0, 0, 0, 0)):
-        self.image = Image.new("RGBA", size, bg)
+    def __init__(self, size, bg=(0, 0, 0, 0), *, density=1):
+        self.logical_size = size
+        self.density = density
+        self.image = Image.new("RGBA", tuple(round(v * density) for v in size), bg)
         self.draw = ImageDraw.Draw(self.image)
 
+    def native(self):
+        view = Art.__new__(Art)
+        view.logical_size = self.image.size
+        view.density = 1
+        view.image = self.image
+        view.draw = self.draw
+        return view
+
+    def point_at(self, point):
+        if self.density == 1:
+            return (round(point[0]), round(point[1]))
+        sx = (self.image.width - 1) / (self.logical_size[0] - 1)
+        sy = (self.image.height - 1) / (self.logical_size[1] - 1)
+        return (round(point[0] * sx), round(point[1] * sy))
+
+    def point(self, point, *, fill):
+        x, y = self.point_at(point)
+        if self.density == 1:
+            self.draw.point((x, y), fill=fill)
+        else:
+            span = max(1, round(self.density * 0.7))
+            x1 = min(self.image.width - 1, x + span - 1)
+            y1 = min(self.image.height - 1, y + span - 1)
+            self.draw.rectangle((x, y, x1, y1), fill=fill)
+
     def p(self, color, *points, outline=None):
-        self.draw.polygon(points, fill=color, outline=outline)
+        self.draw.polygon(tuple(map(self.point_at, points)), fill=color, outline=outline)
 
     def l(self, color, *points, width=1):
-        self.draw.line(points, fill=color, width=width)
+        self.draw.line(tuple(map(self.point_at, points)), fill=color, width=max(1, round(width * self.density)))
 
     def r(self, color, x0, y0, x1, y1, outline=None):
-        self.draw.rectangle((x0, y0, x1, y1), fill=color, outline=outline)
+        px0, py0 = self.point_at((x0, y0))
+        px1, py1 = self.point_at((x1, y1))
+        if self.density != 1:
+            span = max(1, round(self.density)) - 1
+            if px1 - px0 < span:
+                px1 = min(self.image.width - 1, px0 + span)
+            if py1 - py0 < span:
+                py1 = min(self.image.height - 1, py0 + span)
+        self.draw.rectangle((px0, py0, px1, py1), fill=color, outline=outline)
 
     def e(self, color, x0, y0, x1, y1):
-        self.draw.ellipse((x0, y0, x1, y1), fill=color)
+        self.draw.ellipse((*self.point_at((x0, y0)), *self.point_at((x1, y1))), fill=color)
 
     def dither(self, color, strength, *points):
         mask = Image.new("1", self.image.size)
-        ImageDraw.Draw(mask).polygon(points, fill=1)
+        ImageDraw.Draw(mask).polygon(tuple(map(self.point_at, points)), fill=1)
         x0, y0, x1, y1 = mask.getbbox() or (0, 0, 0, 0)
         for y in range(y0, y1):
             for x in range(x0, x1):
                 if BAYER[y % 4][x % 4] < strength and mask.getpixel((x, y)):
                     self.draw.point((x, y), fill=color)
 
-    def save(self, folder, name, scale=1, opaque=False):
+    def save(self, folder, name, opaque=False):
         destination = ASSETS / folder / f"{name}.png"
         destination.parent.mkdir(parents=True, exist_ok=True)
         image = self.image
-        if scale > 1:
-            image = image.resize((image.width * scale, image.height * scale), Image.Resampling.NEAREST)
         if opaque:
             image = image.convert("RGB")
         image.save(destination, optimize=True)
@@ -51,10 +84,19 @@ class Art:
 
 def gradient(a, top, bottom):
     width, height = a.image.size
+    pixels = a.image.load()
+    bands = 24 if width >= 240 else 18
     for y in range(height):
+        level = y * bands / (height - 1)
+        row_bayer = BAYER[y % 4]
         for x in range(width):
-            t = (y + BAYER[y % 4][x % 4] / 16) / height
-            a.draw.point((x, y), tuple(round(lo + (hi - lo) * t) for lo, hi in zip(top, bottom)))
+            t = min(bands, math.floor(level + row_bayer[x % 4] / 16)) / bands
+            pixels[x, y] = (
+                round(top[0] + (bottom[0] - top[0]) * t),
+                round(top[1] + (bottom[1] - top[1]) * t),
+                round(top[2] + (bottom[2] - top[2]) * t),
+                255,
+            )
 
 
 def crest(a, x, y, color, size=1):
@@ -64,7 +106,7 @@ def crest(a, x, y, color, size=1):
 
 
 def aydin(tactical):
-    a = Art((64, 64))
+    a = Art((64, 64), density=2.5)
     gradient(a, (33, 8, 18) if tactical else (35, 40, 54), (91, 17, 35) if tactical else (113, 73, 66))
     stripe = "#961d38" if tactical else "#926358"
     a.dither(stripe, 4, (0, 39), (59, 3), (64, 3), (64, 21), (0, 57))
@@ -117,7 +159,7 @@ def aydin(tactical):
         a.p("#f7d8bf", (45, 30), (50, 28), (49, 31), (46, 32))
         a.r("#4c5158", 35, 29, 36, 31)
         a.r("#4c5158", 47, 29, 48, 31)
-        a.draw.point((36, 29), fill="#fff4d5")
+        a.point((36, 29), fill="#fff4d5")
 
     a.p(INK, (18, 24), (23, 16), (26, 16), (25, 12), (32, 14), (36, 6), (38, 14), (46, 9), (45, 16),
         (51, 15), (49, 19), (54, 22), (49, 24), (46, 21), (42, 21), (39, 24), (38, 20), (33, 21),
@@ -125,11 +167,11 @@ def aydin(tactical):
     a.p("#272531", (20, 23), (25, 17), (29, 16), (32, 17), (36, 9), (36, 16), (33, 19), (27, 19), (23, 23))
     a.p("#544653", (38, 16), (44, 11), (43, 15), (40, 18), (36, 20))
     a.l("#7c6065", (28, 17), (33, 16), (35, 13))
-    a.save("portraits", "aydin_visor" if tactical else "aydin_village", 2, True)
+    a.save("portraits", "aydin_visor" if tactical else "aydin_village", opaque=True)
 
 
 def general():
-    a = Art((64, 64))
+    a = Art((64, 64), density=2.5)
     gradient(a, (26, 28, 39), (100, 48, 49))
     a.dither("#653844", 5, (0, 23), (62, 6), (62, 27), (0, 47))
     a.l("#8e5656", (0, 41), (63, 20))
@@ -152,8 +194,8 @@ def general():
     a.p(INK, (42, 29), (47, 26), (49, 27), (49, 30), (46, 30), (42, 32))
     a.l("#e4b598", (31, 30), (36, 30))
     a.l("#e4b598", (44, 30), (47, 29))
-    a.draw.point((35, 30), fill=INK)
-    a.draw.point((46, 30), fill=INK)
+    a.point((35, 30), fill=INK)
+    a.point((46, 30), fill=INK)
     a.p("#70434b", (41, 30), (39, 35), (38, 37), (43, 39), (46, 37), (44, 35))
     a.l("#f8c39b", (42, 31), (44, 37))
     a.l("#69424b", (21, 34), (20, 36), (22, 40), (23, 38))
@@ -169,11 +211,11 @@ def general():
     a.p("#923750", (15, 20), (22, 14), (31, 10), (42, 10), (47, 13), (39, 12), (29, 14), (21, 17), (17, 22))
     a.l("#27101f", (16, 27), (27, 22), (36, 19), (50, 20), width=2)
     crest(a, 44, 16, "#d4a16c", 0.32)
-    a.save("portraits", "general_portrait", 2, True)
+    a.save("portraits", "general_portrait", opaque=True)
 
 
 def volkov():
-    a = Art((64, 64))
+    a = Art((64, 64), density=2.5)
     gradient(a, (12, 17, 29), (76, 19, 39))
     a.p("#54223b", (0, 51), (64, 12), (64, 26), (0, 60))
     a.dither("#a53552", 4, (0, 51), (64, 12), (64, 23), (0, 62))
@@ -200,7 +242,7 @@ def volkov():
     a.l("#82465d", (19, 40), (24, 43), (29, 49))
     crest(a, 50, 57, "#a72b4e", 0.53)
     crest(a, 50, 56, "#ff4963", 0.42)
-    a.save("portraits", "volkov_silhouette", 2, True)
+    a.save("portraits", "volkov_silhouette", opaque=True)
 
 
 def helix(a, x, y, width, height, phase=0):
@@ -217,7 +259,7 @@ def helix(a, x, y, width, height, phase=0):
 
 
 def device():
-    a = Art((160, 90))
+    a = Art((160, 90), density=3)
     gradient(a, (20, 24, 39), (64, 25, 43))
     for index in range(0, 160, 9):
         a.l("#372a3a", (index, 0), (index - 35, 90))
@@ -250,18 +292,40 @@ def device():
         a.l("#fc4e69", (x + 1, y + 1), (x + 3, y + 1))
     for x in (65, 71, 95, 101):
         a.l("#747082", (x, 72), (x + 2, 74))
-    a.save("portraits", "beta_device_closeup", 2, True)
+
+    # Crisp 480x270 OVA mechanical & biotech closeup details.
+    hi = a.native()
+    # Etched titanium seam lines and hex bolts on outer housing.
+    hi.l("#161a29", (164, 108), (198, 76), (222, 46), (282, 46), (312, 74), (342, 114))
+    hi.l("#8d97ac", (166, 107), (199, 77), (223, 48), (281, 48))
+    hi.l("#22283a", (110, 210), (156, 196), (186, 224), (318, 224), (358, 198), (402, 226))
+    for bx, by in ((170, 96), (206, 54), (298, 54), (336, 98), (186, 214), (322, 214), (132, 232), (382, 236)):
+        hi.r("#111320", bx - 3, by - 3, bx + 3, by + 3)
+        hi.r("#68728a", bx - 2, by - 2, bx + 1, by + 1)
+        hi.point((bx - 1, by - 1), fill="#cdd4df")
+    # Crisp glass reflection curves and fluid micro-spores inside the bio-core.
+    hi.l("#ff9eaa", (214, 174), (212, 118), (225, 96), (242, 88), width=2)
+    hi.l("#ffe9cf", (216, 152), (216, 120), (228, 99), (240, 92))
+    hi.l("#ff8498", (298, 112), (305, 132), (304, 172))
+    for sx, sy, sr in ((228, 118, 2), (274, 112, 2), (242, 146, 3), (268, 158, 2),
+                       (230, 172, 2), (284, 170, 2), (256, 102, 1), (248, 184, 2)):
+        hi.e("#ff7084", sx - sr, sy - sr, sx + sr, sy + sr)
+        hi.point((sx - 1, sy - 1), fill="#fff1d8")
+    # Precision telemetry ticks & crimson status indicators on side pods.
+    for row_y in (122, 146, 174):
+        hi.l("#ff909e", (162, row_y), (171, row_y))
+        hi.l("#ff909e", (338, row_y + 2), (347, row_y + 2))
+    for tx in range(202, 306, 8):
+        hi.l("#8d8b9e" if tx % 16 else "#ff5c78", (tx, 218), (tx, 224))
+    a.save("portraits", "beta_device_closeup", opaque=True)
 
 
 def village():
-    a = Art((160, 90))
+    a = Art((160, 90), density=3)
     rng = random.Random(922)
     gradient(a, (24, 33, 63), (112, 109, 144))
-    a.e("#bfb0ac", 84, 15, 96, 27)
-    a.e("#5e648a", 89, 12, 97, 24)
-    for _ in range(38):
-        x, y = rng.randrange(15, 144), rng.randrange(14, 39)
-        a.draw.point((x, y), fill=rng.choice(("#72779e", "#9595af", "#ccc0b1")))
+    a.e("#dfd3c5", 84, 15, 96, 27)
+    a.e("#2c375d", 89, 12, 98, 24)
     a.p("#525779", (0, 52), (18, 42), (30, 38), (43, 30), (49, 32), (57, 29), (72, 36), (83, 41),
         (105, 32), (119, 28), (133, 39), (159, 47), (159, 73), (0, 73))
     a.p("#777e9f", (33, 37), (43, 30), (49, 32), (57, 29), (68, 35), (57, 34), (53, 36), (48, 34), (40, 38))
@@ -272,7 +336,7 @@ def village():
     for x, y, w in ((48, 61, 6), (60, 62, 8), (76, 59, 9), (89, 59, 8), (96, 64, 6), (68, 66, 7)):
         a.p("#1d263c", (x, y + 2), (x + w // 2, y - 3), (x + w, y + 2), (x + w - 1, y + 6), (x + 1, y + 6))
         a.l("#66617d", (x, y + 2), (x + w // 2, y - 3), (x + w, y + 2))
-        a.draw.point((x + 3, y + 3), fill="#f5ad6f")
+        a.point((x + 3, y + 3), fill="#f5ad6f")
     a.p("#171928", (0, 0), (159, 0), (159, 10), (95, 8), (40, 14), (22, 20), (0, 19))
     a.p("#463039", (0, 8), (47, 7), (97, 5), (158, 5), (159, 9), (95, 9), (40, 15), (19, 20), (0, 18))
     a.l("#8a5650", (9, 15), (42, 12), (96, 7), (152, 7))
@@ -302,11 +366,45 @@ def village():
     a.r("#ffd491", 37, 33, 42, 40)
     a.r("#fff3bd", 39, 35, 40, 40)
     a.l("#623b3b", (35, 42), (44, 42), width=2)
-    a.save("sprites/cutscenes", "bg_village_house", 2, True)
+
+    # Crisp 480x270 OVA nocturnal village details.
+    hi = a.native()
+    # Starfield kept cleanly within the open night sky window.
+    for _ in range(72):
+        sx, sy = rng.randrange(146, 350), rng.randrange(36, 98)
+        if 246 <= sx <= 300 and 34 <= sy <= 86:
+            continue
+        color = rng.choice(("#7d83ab", "#a8aac7", "#e0d6c5", "#fff3db"))
+        hi.point((sx, sy), fill=color)
+        if color == "#fff3db":
+            hi.l("#9fa3c4", (sx - 2, sy), (sx + 2, sy))
+            hi.l("#9fa3c4", (sx, sy - 2), (sx, sy + 2))
+    hi.draw.arc((253, 45, 289, 81), 115, 265, fill="#f7eedd", width=2)
+    # Distant Anatolian pine silhouettes along the mid ridge.
+    for px in range(86, 350, 9):
+        py = 166 + round(10 * math.sin(px * 0.04))
+        ph = 7 + (px * 7) % 10
+        hi.p("#1c243d", (px, py - ph), (px - 3, py), (px + 3, py))
+    # Crisp cottage chimney smoke wisps & warm window glows.
+    for cx, cy in ((153, 186), (192, 189), (242, 180), (279, 180), (298, 195), (214, 201)):
+        hi.r("#ffe09c", cx, cy, cx + 4, cy + 4)
+        hi.point((cx + 1, cy + 1), fill="#fff7d6")
+        hi.l("#596283", (cx + 2, cy - 11), (cx + 5, cy - 19), (cx + 3, cy - 26))
+    # Fine porch post highlights, deck plank joints, lantern cage bars & warm moths.
+    hi.l("#c88664", (72, 62), (66, 214))
+    hi.l("#b38470", (374, 44), (379, 206))
+    for py in range(226, 268, 8):
+        hi.l("#43313b", (18, py), (464, py + 4))
+    hi.l("#4d2c33", (118, 95), (118, 126))
+    hi.l("#4d2c33", (125, 95), (125, 126))
+    hi.l("#ffe3a8", (112, 99), (112, 120))
+    for mx, my in ((96, 108), (144, 102), (138, 134), (104, 140), (154, 118)):
+        hi.r("#ffcf87", mx, my, mx + 1, my + 1)
+    a.save("sprites/cutscenes", "bg_village_house", opaque=True)
 
 
 def tower():
-    a = Art((160, 90))
+    a = Art((160, 90), density=3)
     rng = random.Random(923)
     gradient(a, (13, 18, 38), (57, 61, 88))
     a.p("#302c4a", (15, 28), (57, 18), (128, 13), (159, 18), (159, 22), (77, 24), (45, 29))
@@ -351,192 +449,407 @@ def tower():
     a.l("#744962", (17, 86), (47, 87), (57, 85))
     a.l("#5696aa", (77, 83), (99, 83), (104, 84))
     a.l("#a53853", (109, 87), (135, 87))
-    for _ in range(150):
-        x, y = rng.randrange(160), rng.randrange(90)
-        a.l(rng.choice(("#484866", "#656982", "#485871", "#62617e")), (x, y), (x - 2, y + 4))
-    a.save("sprites/cutscenes", "bg_tower_exterior", 2, True)
+
+    # Crisp 480x270 OVA neo-noir skyline, tower searchlights, neon windows & fine rain.
+    hi = a.native()
+    # Upward spotlight beams sweeping past Volkov Tower into the sky.
+    hi.dither("#4e7c96", 3, (124, 238), (144, 238), (88, 0), (42, 0))
+    hi.dither("#9e3352", 3, (354, 238), (376, 238), (442, 0), (394, 0))
+    # Fine skyscraper office window grids & red aircraft warning beacons.
+    for bx in range(6, 474, 14):
+        if 132 <= bx <= 380:
+            continue
+        top_y = 148 + (bx * 19) % 52
+        if bx % 28 == 6:
+            hi.l("#333856", (bx + 4, top_y - 14), (bx + 4, top_y))
+            hi.r("#ff4364", bx + 3, top_y - 16, bx + 5, top_y - 14)
+        for wy in range(top_y + 6, 230, 7):
+            for wx in range(bx + 2, min(476, bx + 11), 4):
+                if rng.random() < 0.36:
+                    hi.r(rng.choice(("#68c4d4", "#d95770", "#9599b8", "#f0c996")), wx, wy, wx + 1, wy + 2)
+    # Tower glass mullions, glowing floor bands & subtle dithered spire beacon halo.
+    for floor_y in (122, 146, 170, 194, 218):
+        hi.l("#7ee0ec", (170, floor_y), (190, floor_y - 3))
+        hi.l("#ff4e6e", (328, floor_y - 3), (348, floor_y))
+    hi.dither("#68dbdb", 4, (242, 10), (256, 0), (270, 10), (256, 24))
+    hi.r("#e8ffff", 254, 6, 258, 12)
+    # Wet street neon puddle reflections.
+    for rx, ry, rw, rc in ((42, 256, 36, "#c94362"), (116, 262, 48, "#60b8cc"),
+                           (232, 252, 62, "#7bd8e0"), (324, 260, 56, "#e34966"), (402, 254, 40, "#9c4767")):
+        hi.l(rc, (rx, ry), (rx + rw, ry))
+        hi.l("#2a324a", (rx + 6, ry + 2), (rx + rw - 4, ry + 2))
+    # Layered 1px diagonal atmospheric rain streaks.
+    for _ in range(290):
+        rx, ry = rng.randrange(480), rng.randrange(270)
+        length = rng.choice((6, 9, 13))
+        hi.l(rng.choice(("#4a5070", "#68708e", "#5b7991", "#8ba3b8")), (rx, ry), (rx - length // 2, ry + length))
+    a.save("sprites/cutscenes", "bg_tower_exterior", opaque=True)
 
 
-def glove(a):
-    a.p(INK, (69, 90), (64, 74), (68, 63), (76, 55), (83, 55), (89, 59), (93, 70), (99, 74), (112, 89))
-    a.p("#303547", (71, 90), (67, 75), (69, 65), (77, 57), (83, 57), (88, 61), (91, 71), (99, 77), (108, 89))
-    a.p("#4b536a", (68, 69), (77, 59), (84, 60), (88, 65), (86, 68), (81, 67), (77, 71), (73, 74), (68, 74))
-    a.p("#1d2233", (74, 75), (79, 72), (84, 67), (89, 68), (91, 73), (101, 86), (93, 89), (80, 87))
-    a.p("#3e4054", (75, 79), (88, 76), (96, 82), (99, 89), (80, 89), outline=INK)
-    a.l("#70798e", (70, 71), (76, 62), (80, 60))
-    a.l("#8b4f5c", (86, 60), (89, 64), (90, 69))
-    a.l("#191929", (72, 72), (74, 74), (79, 74))
-    a.l("#191929", (76, 67), (79, 69), (83, 68))
-    a.dither("#4e5268", 7, (81, 79), (88, 77), (94, 82), (96, 88), (83, 88))
+HUD_SIZE = (320, 200)
+STEEL = "#35475d"
+BEVEL = "#7d9aaf"
+GLINT = "#c4dce0"
+CARBON = "#202a39"
+RED = "#ef2446"
 
 
-def muzzle(a, x, y, variant, wide=False):
-    radius = (23 if wide else 18) if variant == 1 else 15
-    direction = ((-1, -1), (3, -12), (6, -4), (14, -8), (11, -2), (22, -2), (12, 2), (17, 10),
-                 (8, 6), (4, 13), (3, 5), (-5, 7), (-3, 2), (-9, -2), (-2, -2))
-    a.p("#b9384b", *((x + u * radius // 13, y + v * radius // 13) for u, v in direction))
-    a.p("#fb784b", *((x + u * radius // 18, y + v * radius // 18) for u, v in direction))
-    a.p("#37d2e0", (x - 5, y), (x + 4, y - 2), (x + radius, y - 4), (x + 9, y + 1), (x + 4, y + 5))
-    a.p("#fff3bd", (x - 3, y), (x + 2, y - 3), (x + 8, y - 4), (x + 6, y - 1), (x + 14, y - 1),
-        (x + 6, y + 2), (x + 3, y + 4), (x + 2, y + 2))
-    for dx, dy in ((4, -16), (11, -10), (20, 7), (19, -6), (-1, 10), (11, 10)):
-        a.l("#ff9e65" if dx % 2 else "#7af0e6", (x + dx, y + dy), (x + dx + 1, y + dy - 1))
+class WeaponView:
+    """Project gun-local points from the receiver toward the muzzle."""
+
+    def __init__(self, art, anchor, pitch):
+        self.art = art
+        self.anchor = anchor
+        self.pitch = pitch
+
+    def xy(self, point):
+        along, down = point
+        return (round(self.anchor[0] - along + 0.52 * down),
+                round(self.anchor[1] - self.pitch * along + down))
+
+    def p(self, color, *points, outline=INK):
+        self.art.p(color, *map(self.xy, points), outline=outline)
+
+    def l(self, color, *points, width=1):
+        self.art.l(color, *map(self.xy, points), width=width)
 
 
-def transform_hud(a, angle=0, dx=0, dy=0):
-    if angle:
-        a.image = a.image.rotate(angle, resample=Image.Resampling.NEAREST, center=(73, 76))
-    if angle or dx or dy:
-        canvas = Image.new("RGBA", a.image.size)
-        canvas.paste(a.image, (dx, dy))
-        a.image = canvas
-        a.draw = ImageDraw.Draw(canvas)
+def sleeve(a, wrist, bottom):
+    x, y = wrist
+    left, right = bottom
+    a.p(INK, (left, 199), (x - 21, y + 10), (x - 15, y - 8), (x + 10, y - 12),
+        (x + 23, y + 3), (right, 199))
+    a.p("#292e3b", (left + 3, 199), (x - 18, y + 10), (x - 13, y - 6),
+        (x + 10, y - 9), (x + 20, y + 5), (right - 3, 199))
+    a.p("#40495b", (left + 6, 199), (x - 15, y + 12), (x - 7, y + 14),
+        (x + 3, y + 31), (left + 31, 199))
+    a.p("#1a1d29", (right - 26, 199), (x + 8, y + 24), (x + 19, y + 13), (right - 4, 199))
+    a.l("#515b6a", (x - 15, y + 15), (x - 11, y + 27), (left + 12, 199))
+    a.l("#222533", (x - 5, y + 28), (x + 5, y + 42), (x + 10, y + 45), width=2)
+    a.dither("#53586a", 4, (x - 11, y + 21), (x + 1, y + 31), (left + 29, 199), (left + 17, 199))
+    a.p("#242938", (x - 20, y + 9), (x - 15, y - 8), (x + 12, y - 11),
+        (x + 22, y + 4), (x + 15, y + 16), (x - 11, y + 22), outline=INK)
+    a.l("#6a7889", (x - 17, y + 11), (x - 12, y + 16), (x + 10, y + 11), width=2)
+    a.l("#3d4556", (x - 13, y + 18), (x + 1, y + 15), (x + 15, y + 10))
+
+
+def gripping_hand(a, wrist):
+    x, y = wrist
+    a.p("#212635", (x - 19, y + 4), (x - 22, y - 9), (x - 14, y - 24), (x - 2, y - 29),
+        (x + 10, y - 26), (x + 18, y - 18), (x + 20, y - 7), (x + 12, y + 5),
+        (x - 6, y + 12), outline=INK)
+    a.p("#384456", (x - 17, y + 3), (x - 18, y - 8), (x - 11, y - 19), (x, y - 23),
+        (x + 12, y - 17), (x + 8, y - 9), (x + 3, y - 3), (x - 7, y + 8), outline=INK)
+    a.l("#6b7b8b", (x - 16, y - 5), (x - 12, y - 12), (x - 5, y - 17), width=2)
+    a.l("#5a6678", (x - 13, y + 4), (x - 8, y + 7), (x - 1, y + 3))
+    for row in range(3):
+        yy = y - 20 + row * 6
+        a.p("#966363", (x + 2, yy - 1), (x + 10, yy - 2), (x + 15, yy), (x + 14, yy + 3),
+            (x + 7, yy + 4), (x + 2, yy + 2), outline=INK)
+        a.l("#cb8d76", (x + 5, yy), (x + 10, yy - 1), (x + 12, yy))
+
+
+def muzzle(a, center, variant, wide=False):
+    x, y = center
+    radius = 40 if wide else 31 if variant == 1 else 22
+    points = ((2, 6), (-8, 4), (-18, 13), (-16, 3), (-32, 0), (-20, -5), (-37, -24),
+              (-17, -14), (-19, -30), (-10, -14), (-4, -22), (-3, -8), (8, -12), (4, -3))
+
+    def star(scale):
+        return [(x + round(px * scale), y + round(py * scale)) for px, py in points]
+
+    a.p("#aa2445", *star(radius / 28))
+    a.p("#ff633d", *star(radius / 36))
+    a.p("#ffba62", *star(radius / 47))
+    a.p("#87edec", (x + 2, y + 4), (x - 10, y - 2), (x - radius, y - radius // 2 - 8),
+        (x - 12, y - 9), (x, y - 3))
+    a.p("#fff6cf", *star(radius / 68))
+    for dx, dy, color in ((-35, -2, "#ffd580"), (-21, -30, "#ff934f"),
+                          (-12, -20, "#81e9ec"), (-26, 8, "#fc7650")):
+        sx = x + dx * radius // 30
+        sy = y + dy * radius // 30
+        a.l(color, (sx, sy), (sx - 3, sy - 2))
+
+
+def ammunition(a, anchor, pitch, shell=False):
+    view = WeaponView(a, anchor, pitch)
+    length = 20 if shell else 13
+    body = "#b42e48" if shell else "#b77c4e"
+    highlight = "#ed6870" if shell else "#ffe4a1"
+    view.p(body, (0, 0), (length - 1, 0), (length + 1, 3), (length - 1, 7), (0, 7), (-2, 4))
+    view.l(highlight, (1, 1), (length - 1, 1), width=2)
+    view.p("#c49552", (-1, 0), (3, 0), (3, 7), (-2, 7), (-3, 4))
+    view.l("#ffda91", (-1, 2), (1, 2), width=2)
+    view.l("#783b3a", (4, 5), (length - 1, 5))
+
+
+def pistol_ads():
+    a = Art(HUD_SIZE)
+    sleeve(a, (130, 164), (49, 155))
+    sleeve(a, (192, 161), (167, 276))
+    a.p(CARBON, (136, 147), (145, 126), (150, 102), (155, 99), (165, 99),
+        (170, 104), (177, 130), (186, 148), (178, 168), (143, 169), outline=INK)
+    a.p(STEEL, (138, 139), (151, 105), (156, 101), (164, 101), (169, 105), (181, 138),
+        (171, 146), (151, 146), outline=INK)
+    a.p("#526c84", (141, 137), (152, 106), (157, 103), (164, 103), (170, 119), (173, 139))
+    a.p(BEVEL, (150, 128), (155, 105), (157, 104), (155, 129), outline=None)
+    a.p("#2c3a50", (162, 105), (166, 106), (173, 135), (167, 136))
+    a.l("#afc3ce", (155, 110), (153, 119), (152, 126))
+    for x, direction in ((133, 1), (187, -1)):
+        a.p("#242935", (x - 15, 165), (x - 12, 149), (x + direction * 8, 136),
+            (x + direction * 15, 127), (x + direction * 20, 130), (x + direction * 19, 138),
+            (x + direction * 14, 146), (x + direction * 14, 161), (x + 7, 173), outline=INK)
+        a.p("#3f4b5a", (x - 10, 164), (x + direction * 4, 145), (x + direction * 11, 139),
+            (x + direction * 14, 148), (x + direction * 8, 164), (x, 170), outline=INK)
+        a.p("#a77770", (x + direction * 10, 136), (x + direction * 15, 129),
+            (x + direction * 18, 131), (x + direction * 15, 139), (x + direction * 13, 141), outline=INK)
+        a.l("#e8a388", (x + direction * 13, 133), (x + direction * 15, 131))
+        a.l("#697b8a", (x - 7, 164), (x + direction * 6, 151), (x + direction * 9, 148), width=2)
+    a.p(INK, (148, 140), (148, 126), (153, 124), (156, 128), (156, 132),
+        (164, 132), (164, 128), (167, 124), (173, 127), (173, 140), (169, 150), (152, 150))
+    a.p(STEEL, (151, 139), (151, 128), (154, 128), (155, 135),
+        (165, 135), (167, 128), (170, 129), (170, 139), (167, 147), (154, 147))
+    a.l(BEVEL, (151, 128), (153, 127), (154, 130))
+    a.l(BEVEL, (167, 128), (169, 127), (171, 129))
+    a.r("#293242", 156, 138, 166, 144, outline=INK)
+    a.l("#617890", (157, 139), (164, 139))
+    a.p(INK, (149, 105), (149, 96), (153, 96), (154, 98), (154, 103),
+        (166, 103), (166, 98), (167, 96), (171, 96), (171, 105), (167, 108), (153, 108))
+    a.r(RED, 158, 99, 162, 101)
+    a.point((160, 100), fill="#ff8880")
+    return a
 
 
 def pistol(frame):
-    a = Art((120, 90))
     if frame == "ads":
-        a.p(INK, (41, 89), (44, 77), (52, 66), (54, 54), (65, 54), (67, 68), (75, 77), (82, 89))
-        a.p("#303448", (43, 89), (48, 78), (55, 69), (64, 68), (72, 77), (78, 89))
-        a.p("#4e556e", (46, 89), (49, 79), (56, 71), (59, 73), (55, 79), (55, 89))
-        a.p("#1b202e", (56, 81), (57, 72), (65, 71), (71, 80), (71, 89), (58, 89))
-        a.p("#4a5065", (53, 62), (53, 53), (56, 48), (64, 48), (67, 53), (67, 64), (64, 74), (56, 74), outline=INK)
-        a.p("#202332", (55, 56), (65, 56), (65, 66), (63, 72), (57, 72), outline=INK)
-        a.l("#778da7", (54, 55), (56, 51), (64, 51), (66, 55))
-        a.r(INK, 58, 48, 62, 53)
-        a.r("#f94b66", 59, 48, 61, 49)
-        a.r("#637c91", 57, 58, 63, 60)
-        a.l("#25223a", (47, 85), (53, 83), (56, 85))
-    else:
-        glove(a)
-        a.p(INK, (72, 59), (76, 50), (96, 43), (98, 44), (103, 43), (107, 46), (107, 52), (103, 55), (95, 59),
-            (89, 62), (88, 67), (83, 73), (75, 71), (73, 67))
-        a.p("#2a3041", (76, 57), (79, 54), (94, 48), (104, 47), (105, 51), (101, 55), (88, 61), (86, 67), (83, 71), (77, 69))
-        a.p("#555f76", (75, 54), (77, 49), (97, 43), (102, 44), (106, 45), (106, 49), (102, 51), (79, 59), (75, 57), outline=INK)
-        a.p("#30394c", (78, 54), (94, 48), (105, 46), (105, 49), (81, 57), (78, 57))
-        a.l("#9aa7b5", (79, 50), (96, 45), (101, 46))
-        a.l("#637d98", (82, 56), (101, 49))
-        a.l("#879cb0", (91, 51), (98, 49))
-        for x, y in ((78, 53), (80, 52), (82, 52), (84, 51)):
-            a.l("#161c2c", (x, y), (x + 1, y + 3))
-        a.p("#161928", (82, 60), (90, 57), (92, 57), (88, 63), (85, 66), (82, 64))
-        a.l("#687487", (87, 63), (88, 61), (90, 60))
-        a.p("#474e66", (78, 63), (82, 61), (84, 65), (81, 69), (77, 69), outline=INK)
-        a.l("#77829a", (78, 65), (81, 63))
-        a.r("#d94a64", 94, 43, 95, 44)
-        a.r(INK, 104, 47, 106, 49)
-        if frame.startswith("reload"):
-            transform_hud(a, 15 if frame.endswith("1") else -27, 2, 10)
-            x = 49 if frame.endswith("1") else 59
-            y = 77 if frame.endswith("1") else 70
-            a.p("#25293b", (x - 13, 89), (x - 9, y + 4), (x - 3, y), (x + 7, y + 2), (x + 10, y + 5), (x + 5, y + 9), (x + 1, 89), outline=INK)
-            a.l("#6c728b", (x - 8, y + 5), (x - 3, y + 2), (x + 1, y + 3), width=2)
-            a.p("#393f54", (x, y + 5), (x + 3, y - 9), (x + 9, y - 7), (x + 7, y + 6), (x + 5, y + 8), outline=INK)
-            a.l("#77819a", (x + 4, y - 7), (x + 2, y + 4))
-            a.l("#e9ae68", (x + 4, y - 9), (x + 8, y - 8))
-        elif frame.startswith("fire"):
-            transform_hud(a, 12 if frame.endswith("1") else 5, -5, 4)
-            muzzle(a, 94 if frame.endswith("1") else 98, 43 if frame.endswith("1") else 48, int(frame[-1]))
-    a.save("sprites/weapons", f"pistol_{frame}", 2)
+        pistol_ads().save("sprites/weapons", "pistol_ads")
+        return
+    a = Art(HUD_SIZE)
+    anchor, pitch = {
+        "idle": ((230, 129), 0.42),
+        "fire_1": ((237, 124), 0.67),
+        "fire_2": ((233, 127), 0.54),
+        "reload_1": ((236, 123), 0.87),
+        "reload_2": ((232, 122), 0.73),
+    }[frame]
+    view = WeaponView(a, anchor, pitch)
+    fired = frame.startswith("fire")
+    reloading = frame.startswith("reload")
+    wrist = view.xy((-4, 41))
+    sleeve(a, wrist, (204, 311))
+    view.p(CARBON, (-10, 6), (13, 2), (20, 19), (13, 43), (9, 47), (-11, 44), (-16, 37))
+    view.p("#4c5767", (-8, 11), (7, 10), (10, 20), (6, 38), (-10, 40), (-12, 35))
+    for down in range(21, 39, 3):
+        view.l("#242a36", (-10, down), (6, down - 2))
+    view.p(STEEL, (6, 11), (26, 8), (45, 7), (64, 5), (77, 1), (79, 9), (73, 13),
+        (52, 17), (41, 22), (26, 23), (20, 19), (10, 21))
+    view.p(INK, (25, 19), (42, 18), (47, 19), (41, 28), (34, 32), (21, 30), (16, 26), (20, 20))
+    view.p("#194050", (26, 21), (42, 20), (40, 24), (34, 28), (23, 27), (20, 24))
+    view.l(BEVEL, (22, 29), (34, 30), (41, 27), (45, 21))
+    view.l("#9c5f6c", (50, 14), (72, 10), width=3)
+    view.l(RED, (58, 15), (72, 12))
+    view.p("#43172a", (61, 13), (77, 9), (80, 13), (75, 17), (62, 20), (59, 18))
+    view.l("#ff3e55", (64, 15), (76, 12), width=2)
+    view.p("#7f8fa4", (58, 0), (80, -8), (82, -4), (81, 2), (60, 8))
+    view.l(GLINT, (59, 2), (77, -5), width=2)
+    slide = 12 if frame == "fire_1" or reloading else 7 if fired else 0
+    slide_view = WeaponView(a, view.xy((-slide, 0)), pitch)
+    slide_view.p(INK, (-17, -9), (-7, -19), (8, -23), (65, -17), (78, -13),
+                 (79, -5), (73, 3), (62, 8), (2, 13), (-15, 9))
+    slide_view.p(STEEL, (-14, -8), (1, -19), (65, -15), (76, -12), (77, -6),
+                 (70, 2), (61, 6), (0, 11), (-13, 7))
+    slide_view.p("#617f9c", (-12, -8), (1, -18), (66, -14), (76, -11),
+                 (61, -8), (28, -6), (3, -2), outline=None)
+    slide_view.l(GLINT, (1, -17), (30, -16), (58, -14), (71, -12))
+    slide_view.l("#1a2536", (-10, -3), (3, 0), (26, -3), (56, -6), (75, -10), width=2)
+    slide_view.l("#7897aa", (20, 6), (56, 1), (70, -2))
+    slide_view.p("#1d2838", (33, -5), (54, -8), (59, -7), (54, -3), (34, 0))
+    slide_view.l("#9bbbc6", (35, -3), (51, -5))
+    for along in (-10, -5, 0, 5, 10):
+        slide_view.l(INK, (along, -5), (along + 2, 6), width=2)
+        slide_view.l(BEVEL, (along + 2, -5), (along + 4, 6))
+    slide_view.p(INK, (67, -16), (69, -22), (74, -22), (76, -15))
+    slide_view.l(RED, (70, -20), (73, -20), width=2)
+    slide_view.l("#ffaea0", (71, -20), (72, -20))
+    slide_view.p("#101522", (73, -9), (77, -12), (79, -9), (79, -5), (76, -1), (73, -3))
+    if reloading:
+        mag = WeaponView(a, view.xy((10 if frame == "reload_1" else 3, 55)), pitch)
+        if frame == "reload_2":
+            sleeve(a, (187, 177), (126, 206))
+            gripping_hand(a, (187, 177))
+        mag.p("#3b4b61", (-12, -10), (1, -10), (3, 18), (-13, 22), (-19, 18))
+        mag.l(BEVEL, (-10, -7), (-13, 17), width=2)
+        mag.l("#c49052", (-11, -10), (-3, -11), width=2)
+        mag.l("#171a24", (-16, 18), (1, 15), width=2)
+        view.l("#65e5ee", (65, -4), (77, -8), width=2)
+        view.l("#d2ffff", (74, -8), (79, -9))
+        if frame == "reload_1":
+            a.l("#647991", (wrist[0] - 12, wrist[1] + 12), (wrist[0] - 22, wrist[1] + 30))
+    gripping_hand(a, wrist)
+    if fired:
+        muzzle(a, view.xy((83, -7)), int(frame[-1]))
+        if frame == "fire_2":
+            ammunition(a, (268, 86), -1.15)
+            a.l("#83626b", (268, 94), (262, 101), (257, 104))
+    a.save("sprites/weapons", f"pistol_{frame}")
 
 
 def shotgun(frame):
-    a = Art((120, 90))
-    glove(a)
-    a.p(INK, (53, 89), (52, 76), (62, 65), (72, 62), (84, 49), (96, 39), (110, 33), (113, 35), (113, 41),
-        (110, 44), (106, 45), (99, 53), (91, 59), (85, 68), (78, 79), (65, 89))
-    a.p("#2f3448", (55, 86), (55, 77), (64, 68), (73, 64), (85, 51), (97, 41), (110, 35), (112, 37), (111, 41),
-        (104, 44), (98, 51), (88, 58), (84, 66), (75, 77), (66, 85))
-    a.p("#5c677a", (55, 77), (66, 67), (73, 64), (85, 51), (98, 41), (109, 35), (109, 38), (97, 45), (84, 56), (69, 72), (58, 80))
-    a.l("#a6aeb4", (66, 68), (73, 64), (87, 50), (100, 40), (108, 36))
-    a.l("#44536a", (74, 76), (87, 60), (101, 50), (109, 43), width=2)
-    a.r(INK, 109, 36, 112, 40)
-    a.l("#ec6857", (105, 35), (107, 34))
-    a.p("#161828", (61, 75), (70, 70), (78, 61), (79, 65), (70, 76), (64, 80))
-    a.l("#76879b", (63, 78), (69, 74), (76, 66))
-    a.r("#bb654e", 67, 76, 69, 77)
-    offset = -7 if frame == "pump_1" else -3 if frame == "pump_2" else 0
-    a.p("#674453", *((x + offset, y - offset // 2) for x, y in ((69, 66), (77, 57), (88, 48), (95, 48), (94, 54),
-        (84, 64), (77, 70), (71, 70))), outline=INK)
-    for x in range(74, 91, 3):
-        y = 65 - (x - 74) * 3 // 4
-        a.l("#b77e67", (x + offset, y - offset // 2), (x + 2 + offset, y + 2 - offset // 2))
-        a.l("#32293b", (x + 1 + offset, y + 1 - offset // 2), (x + 2 + offset, y + 3 - offset // 2))
-    a.p("#42465d", (42, 89), (52, 80), (57 + offset, 70), (66 + offset, 64), (71 + offset, 65), (76 + offset, 69),
-        (72 + offset, 77), (62, 84), (59, 89), outline=INK)
-    a.p("#626a83", (52, 83), (58 + offset, 71), (65 + offset, 66), (69 + offset, 67), (63 + offset, 72), (61, 80))
-    a.l("#242a3d", (62 + offset, 74), (67 + offset, 72), (72 + offset, 73))
-    a.l("#242a3d", (63 + offset, 77), (67 + offset, 76), (71 + offset, 77))
+    a = Art(HUD_SIZE)
+    anchor, pitch = {
+        "idle": ((242, 147), 0.47),
+        "fire_1": ((253, 145), 0.71),
+        "pump_1": ((247, 148), 0.58),
+        "pump_2": ((244, 147), 0.48),
+        "reload": ((239, 139), 0.24),
+    }[frame]
+    view = WeaponView(a, anchor, pitch)
+    pump = {"pump_1": -22, "pump_2": -8}.get(frame, 0)
+    wrist = view.xy((0, 24))
+    hand = view.xy((76 + pump, 36)) if frame != "reload" else (191, 167)
+    sleeve(a, wrist, (224, 319))
+    sleeve(a, hand, (100, 200 if frame != "reload" else 229))
+    view.p(INK, (-24, 5), (-16, -19), (4, -29), (44, -26), (53, -20), (133, -16), (148, -11),
+           (149, 5), (142, 11), (130, 14), (123, 24), (78, 27), (52, 30), (32, 35),
+           (9, 38), (-14, 37))
+    view.p(CARBON, (-21, 5), (-13, -17), (5, -25), (44, -23), (53, -17),
+           (133, -14), (146, -10), (146, 4), (137, 11), (124, 12), (123, 20),
+           (72, 25), (48, 27), (31, 32), (10, 35), (-13, 34))
+    view.p(STEEL, (-16, -9), (6, -23), (41, -21), (55, -16), (129, -13),
+           (144, -9), (132, -4), (87, -2), (63, 0), (54, 7), (30, 12), (3, 11))
+    view.p("#55748d", (-10, -11), (7, -22), (40, -20), (55, -15), (126, -12),
+           (135, -10), (110, -8), (52, -7), (42, -9), (5, -8), outline=None)
+    view.l(GLINT, (7, -21), (36, -19), (48, -17))
+    view.l(BEVEL, (54, -15), (101, -13), (127, -11), width=2)
+    view.l("#69879b", (56, 6), (93, 2), (126, 1), (141, -2), width=2)
+    view.p("#526479", (149, -10), (153, -7), (154, 1), (149, 8), (144, 7), (142, 2), (143, -5))
+    view.p(INK, (149, -7), (151, -6), (152, 1), (149, 5), (146, 4), (145, -1), (146, -5))
+    view.l(GLINT, (150, -7), (152, -4))
+    view.p(INK, (132, -15), (137, -23), (143, -22), (145, -14))
+    view.l(RED, (138, -21), (142, -21), width=2)
+    for along in range(69, 129, 10):
+        view.p(INK, (along, -10), (along + 6, -10), (along + 7, -7), (along + 4, -4), (along, -5))
+        view.l(BEVEL, (along + 1, -5), (along + 5, -5))
+    view.p("#111b2a", (7, -6), (29, -13), (45, -12), (52, -7), (48, 5), (32, 10), (6, 9))
+    view.p("#2b3b50", (12, -3), (30, -9), (45, -9), (48, -6), (44, 3), (32, 6), (12, 5))
+    view.l("#78a0b3", (12, -2), (30, -8), (43, -8))
+    view.l("#9ae0e6" if pump else "#72889a", (32, 1), (42, -1), width=2)
+    view.p("#292330", (12, 12), (48, 8), (48, 22), (12, 28), (4, 23))
+    for along in range(12, 45, 8):
+        shell = WeaponView(a, view.xy((along, 24)), 2.4)
+        shell.p("#a72942", (0, 0), (6, -2), (7, 2), (5, 7), (0, 8), (-1, 4))
+        shell.l("#f56a6f", (1, 1), (5, -1))
+        shell.l("#dfab6f", (0, 4), (0, 7), width=2)
+    forestock = WeaponView(a, view.xy((pump, 0)), pitch)
+    forestock.p("#323847", (54, 11), (107, 6), (120, 9), (119, 20), (109, 26),
+                (67, 31), (53, 25))
+    forestock.l(BEVEL, (57, 13), (105, 9), (116, 11))
+    for along in range(59, 114, 8):
+        forestock.l(INK, (along, 13), (along + 3, 26), width=3)
+        forestock.l("#647584", (along + 2, 13), (along + 5, 26))
+    gripping_hand(a, wrist)
+    gripping_hand(a, hand)
     if frame == "fire_1":
-        transform_hud(a, 15, -16, 14)
-        muzzle(a, 82, 42, 1, wide=True)
+        muzzle(a, view.xy((153, 1)), 1, wide=True)
     elif frame == "reload":
-        transform_hud(a, -20, 4, 17)
-        a.p("#42465d", (39, 89), (47, 74), (56, 68), (63, 69), (68, 74), (65, 81), (57, 89), outline=INK)
-        a.l("#767d91", (45, 84), (48, 77), (56, 71))
-        a.p("#bb3d4e", (58, 73), (62, 73), (66, 63), (62, 61), outline=INK)
-        a.l("#ff7b70", (61, 68), (63, 63))
-        a.l("#ffbd77", (59, 72), (62, 73), width=2)
-    a.save("sprites/weapons", f"shotgun_{frame}", 2)
+        view.p(INK, (44, 23), (62, 17), (66, 19), (62, 27), (47, 31), (42, 29))
+        view.l("#7da6b5", (45, 29), (61, 24), width=2)
+        ammunition(a, (hand[0] + 6, hand[1] - 21), 0.76, shell=True)
+    elif frame == "pump_1":
+        ammunition(a, (206, 88), -0.85, shell=True)
+    a.save("sprites/weapons", f"shotgun_{frame}")
 
 
 def blade(frame):
-    a = Art((120, 90))
-    glove(a)
-    a.p("#373d54", (75, 65), (79, 60), (88, 53), (92, 55), (91, 59), (83, 68), (77, 69), outline=INK)
-    a.l("#817582", (79, 64), (87, 55))
-    a.p("#282635", (85, 54), (90, 50), (95, 55), (93, 58), (88, 58), outline=INK)
-    a.p("#6a768b", (89, 51), (94, 41), (104, 30), (113, 25), (111, 35), (105, 45), (95, 56), outline=INK)
-    a.p("#343b51", (91, 51), (97, 41), (106, 32), (110, 29), (106, 36), (100, 43), (95, 52))
-    a.l("#c7cfcc", (111, 28), (109, 35), (103, 45), (95, 54), width=2)
-    a.l("#b35969", (93, 52), (101, 42))
+    a = Art(HUD_SIZE)
+    anchor, pitch = {"idle": ((224, 149), 0.84), "slash_1": ((206, 151), 0.42),
+                     "slash_2": ((182, 153), 0.14)}[frame]
     if frame.startswith("slash"):
-        first = frame.endswith("1")
-        transform_hud(a, 48 if first else 77, -15 if first else -38, 12 if first else 18)
-        arc_points = ((1, 72), (14, 62), (31, 49), (54, 35), (79, 26), (99, 23), (116, 26), (102, 30),
-                      (87, 34), (65, 45), (48, 58), (65, 49), (78, 47), (101, 44), (78, 54), (55, 65), (27, 78), (7, 81))
-        shift = 0 if first else -16
-        a.p((171, 29, 74, 215), *((x, y + shift) for x, y in arc_points))
-        a.p("#ff6d84", (3, 75 + shift), (24, 60 + shift), (56, 40 + shift), (83, 29 + shift), (105, 25 + shift),
-            (93, 31 + shift), (67, 42 + shift), (41, 58 + shift), (26, 70 + shift), (52, 62 + shift), (37, 73 + shift))
-        a.l("#fff1d5", (6, 76 + shift), (24, 63 + shift), (53, 45 + shift), (75, 35 + shift), (104, 25 + shift), width=2)
-        a.l("#ffa6a2", (42, 68 + shift), (66, 55 + shift), (89, 48 + shift))
-    a.save("sprites/weapons", f"melee_{frame}", 2)
+        y = 0 if frame.endswith("1") else 20
+        a.p((130, 18, 52, 195), (20, 161 + y), (57, 119 + y), (104, 83 + y), (158, 57 + y),
+            (211, 44 + y), (279, 39 + y), (309, 48 + y), (262, 52 + y), (209, 69 + y),
+            (136, 104 + y), (166, 97 + y), (211, 94 + y), (152, 118 + y), (91, 154 + y), (46, 169 + y))
+        a.p("#df3057", (28, 158 + y), (77, 112 + y), (122, 80 + y), (169, 59 + y),
+            (214, 49 + y), (284, 42 + y), (257, 53 + y), (211, 64 + y), (163, 83 + y),
+            (116, 110 + y), (66, 147 + y), (101, 132 + y), (76, 151 + y))
+        a.l("#fff0d9", (34, 157 + y), (69, 126 + y), (122, 89 + y), (165, 68 + y),
+            (210, 54 + y), (266, 45 + y), width=2)
+        a.l("#ff8494", (78, 155 + y), (122, 128 + y), (166, 108 + y), (190, 100 + y))
+    view = WeaponView(a, anchor, pitch)
+    wrist = view.xy((-2, 22))
+    sleeve(a, wrist, (196 if frame == "idle" else 166, 314))
+    view.p(CARBON, (-19, 21), (-18, 9), (-8, 0), (20, -8), (27, -2), (29, 8),
+           (22, 16), (-7, 26), (-15, 26))
+    view.l(BEVEL, (-15, 11), (-7, 4), (18, -4))
+    for along in range(-10, 24, 5):
+        view.l("#111824", (along, 6), (along + 5, 16), width=2)
+    view.p("#384658", (21, -9), (27, -12), (35, -5), (36, 7), (31, 16), (24, 14), (23, 5))
+    view.l(BEVEL, (26, -9), (32, -4), (34, 3))
+    view.p("#435368", (30, -6), (47, -11), (83, -16), (106, -15), (94, -2),
+           (79, 6), (55, 12), (36, 10))
+    view.p("#252e3f", (35, -5), (55, -10), (89, -14), (104, -14), (91, -7),
+           (73, -2), (49, 4), (36, 5), outline=None)
+    view.p("#6f8b9c", (37, 7), (64, 4), (89, -3), (105, -14), (95, -3), (80, 5),
+           (54, 11), (38, 10), outline=None)
+    view.l(GLINT, (39, 10), (55, 10), (80, 4), (94, -3), (104, -13))
+    view.l(INK, (41, 1), (63, -4), (86, -10), width=3)
+    view.l("#4b566c", (42, 2), (66, -3), (86, -9))
+    view.l("#ad5267", (45, -6), (63, -9), (80, -11))
+    gripping_hand(a, wrist)
+    a.save("sprites/weapons", f"melee_{frame}")
 
 
 def beta_hand(frame):
-    a = Art((120, 108))
-    a.p(INK, (-13, 107), (5, 75), (16, 66), (18, 53), (22, 46), (23, 32), (27, 26), (30, 27), (31, 39),
-        (34, 26), (38, 23), (41, 26), (39, 40), (43, 32), (48, 32), (50, 36), (46, 48), (50, 46), (56, 48),
-        (57, 53), (49, 60), (42, 70), (36, 78), (15, 107))
-    a.p("#34374e", (-11, 107), (7, 77), (18, 67), (19, 54), (27, 44), (38, 41), (45, 45), (49, 49), (55, 49),
-        (54, 53), (47, 58), (40, 69), (34, 77), (13, 107))
-    for x, y, end_x, end_y in ((26, 30, 25, 47), (38, 26, 34, 45), (47, 35, 42, 47), (54, 51, 46, 56)):
-        a.l("#596178", (x, y), (end_x, end_y), width=3)
-        a.l("#ef536e", (x, y + 2), ((x + end_x) // 2, (y + end_y) // 2))
-    a.p("#51435b", (-7, 107), (11, 76), (18, 68), (18, 60), (24, 51), (33, 48), (41, 52), (44, 62), (39, 70),
-        (32, 77), (20, 89), (7, 107), outline=INK)
-    a.l("#8a5d72", (-5, 105), (17, 74), (22, 68), (21, 61), width=2)
-    a.p("#220d28", (23, 65), (24, 56), (30, 52), (36, 53), (40, 58), (39, 64), (33, 70), (27, 70))
-    a.p("#a91441", (25, 63), (26, 57), (31, 54), (36, 55), (38, 59), (37, 64), (33, 68), (27, 68))
-    a.p("#f03f61", (27, 62), (29, 57), (33, 56), (36, 59), (34, 64), (30, 66))
-    helix(a, 32, 56, 3, 9, frame * 0.9)
-    a.l("#ff7d8e", (32, 70), (29, 75), (20, 80), (16, 87), width=2)
-    a.l("#594963", (15, 81), (20, 74), (23, 72))
-    transform_hud(a, -2 - frame * 2, 2 + frame * 2, 2 - frame * 2)
-    a.image = a.image.crop((0, 0, 120, 90))
-    a.draw = ImageDraw.Draw(a.image)
-    for index in range(frame + 2):
-        points = [(33 + frame * 2, 56 - frame * 3)]
-        for step in range(1, 9):
-            x = 34 + step * (4 + index) + frame * 2
-            y = 55 - step * (2 + index) + round(math.sin(step * 1.5 + index + frame) * (2 + index))
-            points.append((x, y))
-        a.l((154, 15, 65, 155), *points, width=3)
-        a.l("#f44367", *points)
-        for x, y in points[2::3]:
-            a.draw.point((x + 2, y - 2), fill="#ffc1a5")
-    a.save("sprites/weapons", f"beta_hand_{frame}", 2)
+    a = Art(HUD_SIZE)
+    lift = (0, -4, -8)[frame - 1]
+    center = (71 + frame * 4, 132 + lift)
+    cx, cy = center
+    paths = (
+        ((5, -7), (13, -24), (29, -28), (23, -38), (41, -43), (55, -60), (75, -66)),
+        ((16, 4), (33, -3), (43, -17), (62, -13), (71, -29), (96, -32), (109, -43)),
+        ((13, 12), (31, 13), (40, 5), (61, 12), (82, 5), (106, 9), (142, -5)),
+        ((4, -10), (0, -22), (9, -34), (5, -51), (23, -65), (30, -89)),
+        ((20, -4), (50, -4), (56, -21), (84, -26), (99, -46), (126, -57), (155, -59)),
+    )
+    for index, path in enumerate(paths[:(1, 3, 5)[frame - 1]]):
+        points = tuple((cx + x, cy + y) for x, y in path)
+        a.l((163, 19, 61, 142), *points, width=frame + 2)
+        a.l("#ff2c63", *points, width=1 if frame == 1 else 2)
+        if frame > 1:
+            a.l("#ffb1ac" if index % 2 else "#ff5a8b", *points[2:-1])
+        for x, y in points[2::2]:
+            a.l("#ff9ba6", (x + 2, y - 3), (x + 5, y - 5))
+    sleeve(a, (53, 166 + lift), (0, 117))
+    hand = WeaponView(a, (55, 159 + lift), 0.1)
+    hand.p("#303646", (23, 16), (28, 1), (18, -11), (20, -24), (27, -30),
+           (25, -43), (17, -48), (8, -46), (4, -34), (-3, -38), (-7, -58), (-16, -61),
+           (-21, -55), (-17, -33), (-25, -41), (-32, -59), (-39, -59), (-43, -52),
+           (-37, -29), (-47, -43), (-55, -42), (-58, -34), (-45, -15), (-40, -2),
+           (-32, 9), (-22, 21), (2, 28))
+    hand.p("#414c61", (20, 13), (24, 2), (14, -11), (15, -22), (22, -29),
+           (19, -39), (13, -40), (5, -27), (-13, -25), (-29, -22), (-39, -13),
+           (-38, -3), (-21, 17), (-7, 25), (8, 21))
+    for x, y in ((-13, -55), (-34, -53), (-49, -37), (16, -42)):
+        hand.l("#7b8ca0", (x, y), (x + 3, y + 11), width=3)
+        hand.l("#d55a72", (x - 1, y + 2), (x, y + 6))
+    hand.p("#202334", (9, 19), (13, 1), (5, -17), (-11, -22), (-27, -14),
+           (-34, -3), (-28, 8), (-17, 22), (-1, 26))
+    hand.p("#566379", (7, 18), (9, 5), (4, 3), (-1, 9), (-10, 19), (-18, 20), (-9, 24))
+    hand.l("#8194a7", (6, 17), (6, 8), (4, 5))
+    hand.p("#541734", (3, 0), (4, -14), (-4, -21), (-17, -21), (-26, -15),
+           (-30, -5), (-25, 5), (-13, 9), (-2, 6))
+    hand.p("#ad183f", (0, 0), (1, -13), (-5, -18), (-17, -18), (-24, -13),
+           (-27, -5), (-22, 3), (-13, 6), (-3, 3))
+    hand.l("#ff6a79", (-2, -2), (-1, -11), (-6, -16), (-13, -17), width=2)
+    hand.l("#ffd2b8", (-2, -9), (-5, -14), (-10, -15))
+    hand.l("#6a1838", (-20, 1), (-23, -4), (-23, -10))
+    helix(a, cx - 2, cy + 10, 5, 16, frame * 0.92)
+    hand.l("#f54362", (2, 8), (7, 13), (1, 21), (-6, 24), width=2)
+    a.l("#ff8390", (50, 170 + lift), (40, 178 + lift), (33, 189 + lift), width=2)
+    for x, y in ((43, 148 + lift), (91, 143 + lift), (77, 170 + lift)):
+        a.r(INK, x - 2, y - 2, x + 2, y + 2)
+        a.point((x, y), fill="#a4c2d0")
+    a.save("sprites/weapons", f"beta_hand_{frame}")
 
 
 ENEMIES = {
@@ -546,10 +859,118 @@ ENEMIES = {
     "merc_lv2": ("#201e2d", "#3e435d", "#8390a7", "#b56a41", "#ff6954"),
 }
 ENEMY_FRAMES = ("idle_1", "idle_2", "walk_1", "walk_2", "walk_3", "walk_4", "windup_1", "windup_2",
-                "attack_1", "attack_2", "hurt_1", "corpse_fresh", "corpse_drained")
+                "attack_1", "attack_2", "hurt_1", "death_1", "death_2", "death_3",
+                "corpse_fresh", "corpse_drained")
 
 
-def corpse(enemy, drained):
+def windup_halo(a, muzzle, index):
+    width = a.image.width
+    x, y = muzzle
+    radius = (9 + 3 * index) if width == 64 else (13 + 4 * index)
+    # Keep both arc segments in the frame even when the muzzle is near its edge.
+    ring_x = min(width - radius - 3, x)
+    outer = (ring_x - radius, y - radius, ring_x + radius, y + radius)
+    inner = (outer[0] + 3, outer[1] + 3, outer[2] - 3, outer[3] - 3)
+    glow = "#ff9e4d" if index == 1 else "#ff6748"
+    for begin, end in ((191, 273), (288, 352), (18, 107)):
+        a.draw.arc(outer, begin, end, fill=(202, 44, 54, 168), width=3)
+        a.draw.arc(inner, begin + 8, end - 7, fill=glow)
+    a.l("#ffb762", (ring_x - radius + 3, y - 4), (ring_x - radius, y - 7), width=2)
+    a.l("#ffa86a", (ring_x + 2, y - radius + 2), (ring_x + 3, y - radius - 3))
+    a.l("#f25151", (ring_x + 5, y + radius - 3), (ring_x + 9, y + radius - 1))
+    a.p(glow, (x - 7, y), (x - 2, y - 2), (x, y - 7), (x + 2, y - 2),
+        (x + 6, y), (x + 1, y + 2), (x, y + 6), (x - 2, y + 2))
+    a.p("#fff2b2", (x - 3, y), (x, y - 3), (x + 3, y), (x, y + 2))
+    if index == 2:
+        a.l("#ffdc7c", (ring_x - 5, y - radius + 3), (ring_x - 9, y - radius))
+        a.l("#ff8758", (ring_x - radius + 1, y + 5), (ring_x - radius - 3, y + 8), width=2)
+
+
+def death_pose(torso, fallen, palette, index):
+    w, h = torso.image.size
+    shadow, uniform, light, trim = palette
+    size = w / 64
+    a = Art((w, h))
+    a.e((25, 18, 28, 104), 2, h - 8, w - 3, h - 1)
+
+    if index == 3:
+        # Keep the boots planted and lift the head a few pixels before impact.
+        a.image.alpha_composite(fallen.image.transform(
+            (w, h), Image.Transform.AFFINE, (1, 0, 0, 0.09, 1, 0),
+            resample=Image.Resampling.NEAREST))
+        a.l("#765164", (4, h - 9), (10, h - 12), (16, h - 12))
+        a.l("#956e75", (w - 13, h - 14), (w - 8, h - 13), (w - 4, h - 10))
+        a.l("#b67c78", (w - 12, h - 20), (w - 8, h - 21))
+        a.l("#4f3b4c", (w - 25, h - 6), (w - 16, h - 6))
+        return a
+
+    fall = index == 2
+    pivot_x, pivot_y = (w // 2, 80 if w == 96 else 60)
+    hip_x = round(w * (0.36 if fall else 0.43))
+    hip_y = h - round((16 if fall else 28) * size)
+    angle = math.radians(38 if fall else 16)
+    proportion = 0.82 if fall else 0.93
+    cosine, sine = math.cos(angle) / proportion, math.sin(angle) / proportion
+    leaned = torso.image.transform(
+        (w, h), Image.Transform.AFFINE,
+        (cosine, sine, pivot_x - cosine * hip_x - sine * hip_y,
+         -sine, cosine, pivot_y + sine * hip_x - cosine * hip_y),
+        resample=Image.Resampling.NEAREST,
+    )
+    if fall:
+        alpha = leaned.getchannel("A")
+        leaned = Image.blend(leaned, Image.new("RGBA", leaned.size, "#181521"), 0.35)
+        leaned.putalpha(alpha)
+
+    def point(x, y):
+        return round(x * size), h - 1 + round(y * size)
+
+    legs = (
+        ((24, -30), (15, -14), (12, -3), 4), ((31, -30), (43, -13), (51, -3), 4),
+    ) if not fall else (
+        ((20, -16), (14, -7), (5, -3), 0), ((26, -15), (36, -2), (20, -2), 0),
+    )
+    for top, knee, toe, heel in legs:
+        tx, ty = top
+        kx, ky = knee
+        fx, fy = toe
+        a.p(shadow, *[point(x, y) for x, y in (
+            (tx - 6, ty), (tx + 6, ty), (kx + 5, ky - 3), (kx + 4, ky + 1),
+            (fx + 5, fy - heel), (fx + 7, fy + 1), (fx - 5, fy + 2),
+            (fx - 7, fy - 1), (kx - 5, ky + 3), (kx - 5, ky - 3))], outline=INK)
+        a.l(uniform, point(tx - 3, ty + 2), point(kx - 2, ky), point(fx - 3, fy),
+            width=round(4 * size))
+        a.p(trim if not fall else uniform, point(kx - 4, ky - 2), point(kx + 3, ky - 2),
+            point(kx + 4, ky), point(kx + 1, ky + 2), point(kx - 3, ky + 2), outline=INK)
+        a.l(light if not fall else uniform, point(kx - 3, ky - 1), point(kx, ky - 1))
+    a.image.alpha_composite(leaned)
+
+    x, y = point(50 if fall else 49, -11 if fall else -28)
+    dropped = WeaponView(a, (x, y), -0.35 if fall else 0.38)
+    length = round((16 if w == 96 else 11) * size)
+    dropped.p("#3b4555", (-4, -3), (length - 3, -3), (length, -1),
+              (length, 2), (2, 4), (-1, 9), (-5, 8), (-3, 4), (-6, 0))
+    dropped.l("#889aaa", (-3, -1), (length - 2, -1))
+    dropped.l("#7a313f", (length - 4, 1), (length - 1, 1))
+
+    if not fall:
+        x, y = point(29, -55)
+        a.p("#a32947", (x - 11, y - 7), (x - 2, y - 3), (x + 2, y - 11), (x + 4, y - 2),
+            (x + 12, y - 4), (x + 7, y + 2), (x + 11, y + 9), (x + 2, y + 5),
+            (x - 4, y + 10), (x - 5, y + 3), (x - 13, y + 4))
+        a.p("#fc536b", (x - 6, y - 3), (x + 1, y), (x + 3, y - 6), (x + 4, y),
+            (x + 8, y - 2), (x + 5, y + 3), (x + 1, y + 5), (x - 3, y + 3))
+        a.l("#ffd0aa", (x - 2, y + 1), (x + 2, y + 2), (x + 4, y))
+        for dx, dy in ((-15, -8), (-9, -13), (7, -15), (14, 2), (-15, 10)):
+            a.l("#f56670", (x + dx, y + dy), (x + dx - 2, y + dy - 3))
+    else:
+        for dx, dy in ((17, -49), (20, -44), (28, -45)):
+            x, y = point(dx, dy)
+            a.l("#923146", (x, y), (x - 2, y - 2))
+    return a
+
+
+def corpse(enemy, drained, *, charged=True):
     a = Art((64, 96))
     shadow, uniform, light, trim, visor = ENEMIES[enemy]
     if drained:
@@ -581,19 +1002,22 @@ def corpse(enemy, drained):
     if drained:
         a.dither("#26252d", 8, (22, 86), (38, 81), (52, 86), (43, 89), (24, 91))
         for x, y in ((12, 92), (18, 90), (25, 94), (48, 94), (58, 92)):
-            a.draw.point((x, y), fill="#77717a")
-    else:
+            a.point((x, y), fill="#77717a")
+    elif charged:
         for x, y, radius in ((29, 72, 3), (37, 63, 4), (46, 70, 2), (32, 57, 2), (24, 65, 1), (41, 54, 1)):
             a.e((122, 14, 57, 140), x - radius - 2, y - radius - 2, x + radius + 2, y + radius + 2)
             a.e("#de3155", x - radius, y - radius, x + radius, y + radius)
             a.e("#ff978c", x - radius // 2, y - radius // 2, x + radius // 2, y + radius // 2)
-            a.draw.point((x, y), fill="#ffe5b7")
+            a.point((x, y), fill="#ffe5b7")
         a.l("#b92a52", (29, 87), (34, 81), (37, 79), (37, 75))
         a.l("#ff506a", (30, 86), (34, 82), (36, 81))
     return a
 
 
-def enemy_frame(enemy, frame):
+def enemy_frame(enemy, frame, *, torso_only=False):
+    if frame.startswith("death"):
+        body = enemy_frame(enemy, "idle_1", torso_only=True)
+        return death_pose(body, corpse(enemy, False, charged=False), ENEMIES[enemy][:4], int(frame[-1]))
     if frame.startswith("corpse"):
         return corpse(enemy, frame.endswith("drained"))
     a = Art((64, 96))
@@ -640,13 +1064,18 @@ def enemy_frame(enemy, frame):
         a.p(trim, (42, 28), (50, 25), (57, 30), (57, 37), (53, 41), (45, 39), outline=INK)
         a.l("#e9aa62", (9, 31), (14, 27), (21, 29), width=2)
         a.l("#e9aa62", (45, 29), (50, 27), (55, 30), width=2)
+        a.l("#784536", (11, 35), (17, 37), (22, 34))
+        a.r("#f4b276", 52, 30, 54, 31)
     elif technician:
-        a.l("#f8a356", (17, 29), (21, 34), (21, 39), width=2)
+        a.p("#535c71", (13, 29), (19, 26), (23, 30), (23, 38), (20, 41), (14, 37), outline=INK)
+        a.l("#f8a356", (16, 30), (19, 31), (21, 36), width=2)
         a.l("#e98946", (45, 32), (47, 38), width=2)
         a.l(INK, (33, 29), (34, 37), (33, 41), (33, 52))
     else:
         a.p("#a5c0d1", (11, 31), (15, 27), (21, 29), (23, 33), (20, 37), (12, 36), outline=INK)
         a.l("#e7ebe1", (13, 32), (16, 29), (20, 30))
+        a.p("#718ba2", (45, 30), (50, 27), (54, 30), (54, 34), (48, 37), (44, 35), outline=INK)
+        a.l("#bed4db", (47, 30), (50, 29), (53, 31))
         a.r("#638eaa", 28, 33, 32, 34)
 
     if technician:
@@ -663,6 +1092,7 @@ def enemy_frame(enemy, frame):
         a.l("#794350", (34, 23), (38, 22), (40, 23))
         a.r("#253c4c", 22, 16, 26, 23, outline=INK)
         a.l(visor, (24, 17), (24, 20))
+        a.point((24, 17), fill="#e2fff1")
         a.l("#566b79", (25, 22), (29, 24), (32, 24))
     else:
         top = 3 if heavy else 6
@@ -675,7 +1105,8 @@ def enemy_frame(enemy, frame):
             (30, top + 19), (25, top + 18))
         a.p(visor, (25, top + 13), (31, top + 11), (39, top + 11), (44, top + 13), (41, top + 16),
             (36, top + 16), (34, top + 15), (29, top + 16))
-        a.l("#fdf3cc", (31, top + 12), (37, top + 12))
+        a.l("#fdf3cc", (30, top + 13), (34, top + 12), (38, top + 12))
+        a.l("#edf4df" if not heavy else "#ffad91", (39, top + 15), (42, top + 13))
         a.p(shadow, (26, top + 18), (30, top + 19), (34, top + 17), (38, top + 19), (42, top + 17),
             (42, top + 21), (38, top + 24), (30, top + 24), outline=INK)
         a.l(uniform, (31, top + 21), (36, top + 22), (39, top + 21))
@@ -692,6 +1123,8 @@ def enemy_frame(enemy, frame):
     a.p(uniform, (47, 33), (52, 36), (53, 42), (49, 47), (43, gun_y + 9), (35, gun_y + 8),
         (34, gun_y + 4), (42, gun_y + 2), (46, 40), (45, 36), outline=INK)
     a.l(light, (49, 36), (51, 40), (48, 44), (43, gun_y + 7))
+    if torso_only:
+        return a
     reach = 9 if heavy else 7 if technician else 4
     back = 15 if heavy else 12 if technician else 8
     a.p("#384255", (gun_x - back - 7, gun_y + 6), (gun_x - back - 1, gun_y + 1), (gun_x + reach, gun_y - 4),
@@ -704,30 +1137,20 @@ def enemy_frame(enemy, frame):
         (gun_x - 13, gun_y + 9), (gun_x - 16, gun_y + 10), outline=INK)
     a.l(light, (gun_x - 15, gun_y + 6), (gun_x - 12, gun_y + 4))
     if pose == "windup":
-        x, y = gun_x + reach + 1, gun_y - 2
-        spark = "#ffd286" if index == 1 else "#ff7259"
-        aura = (201, 75, 51, 110) if index == 1 else (229, 48, 69, 145)
-        a.draw.arc((x - 10, y - 10, x + 10, y + 10), 176, 350, fill=aura, width=3)
-        a.draw.arc((x - 12, y - 12, x + 12, y + 12), 200, 326, fill=spark)
-        a.p(spark, (x - 5, y - 1), (x - 1, y - 2), (x, y - 7), (x + 2, y - 2), (x + 7, y),
-            (x + 2, y + 2), (x, y + 6), (x - 1, y + 2))
-        a.r("#fff4cb", x - 1, y - 1, x + 1, y + 1)
-        a.l(spark, (x - 10, y - 6), (x - 8, y - 4))
-        a.l(spark, (x + 4, y - 9), (x + 5, y - 11))
+        windup_halo(a, (gun_x + reach + 1, gun_y - 2), index)
     if pose == "attack":
         x, y = gun_x + reach, gun_y - 2
         length = 11 if index == 1 else 7
         a.p("#ff854e", (x - 2, y), (x + 2, y - 3), (x + 3, y - length), (x + 5, y - 4), (x + length, y - 2),
             (x + 6, y + 1), (x + length, y + 6), (x + 3, y + 3), (x + 1, y + 6))
         a.p("#fff1bb", (x - 1, y), (x + 3, y - 3), (x + 6, y - 1), (x + 5, y + 2), (x + 2, y + 2))
-        a.draw.point((x - 1, y - length), fill="#f1a769")
+        a.point((x - 1, y - length), fill="#f1a769")
     if pose == "hurt":
         a.l("#f37470", (18, 28), (22, 30), (24, 35), width=2)
         a.l("#f47d70", (43, 45), (47, 48), (50, 48))
         for x, y in ((12, 23), (18, 31), (9, 29), (47, 43), (52, 52)):
             a.r("#ea5665", x, y, x + 1, y + 1)
-    transform_hud(a, 0, sway, bob)
-    body.image.alpha_composite(a.image)
+    body.image.alpha_composite(a.image, (sway, bob))
     return body
 
 
@@ -857,7 +1280,7 @@ def textures():
         a.l("#60505a", (0, y + 2), (127, y + 2))
         a.l("#332e45", (0, y + 3), (127, y + 3))
         for x in range(0, 128, 4):
-            a.draw.point((x, y + 2), fill="#8d655a")
+            a.point((x, y + 2), fill="#8d655a")
     a.save(folder, "f2_carpet_floor", opaque=True)
 
     a = material((46, 56, 76), (10, 11, 15), 11, lambda u, v, x, y: 0.48 * math.cos(2 * u) - (y % 3) * 0.08)
@@ -879,7 +1302,7 @@ def textures():
             for n in range(y + 4, y + 10, 2):
                 a.l("#172031", (x + 11, n), (x + 36, n))
             for pos in range(x + 12, x + 37, 4):
-                a.draw.point((pos, y + 5), fill="#4d596e")
+                a.point((pos, y + 5), fill="#4d596e")
             a.r("#191f2d", x + 38, y + 4, x + 52, y + 9)
             for led in (40, 44, 48):
                 color = rng.choice(("#985746", "#ed905c", "#4da29f", "#557285"))

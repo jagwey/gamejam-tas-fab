@@ -24,6 +24,8 @@ var shot_index: int = 0
 var remaining: float = 0.0
 var pan: Tween
 var textures: Dictionary = {}
+var reveal_count := 0.0
+var next_tick := 0
 
 func _ready() -> void:
 	if DisplayServer.get_name() != "headless":
@@ -60,15 +62,33 @@ func _show_shot() -> void:
 	var line: Array = SHOTS[shot_index]
 	%Radio.visible = shot_index == 9
 	%Speaker.text = str(line[0]).to_upper()
-	%Dialogue.text = str(line[1])
+	_begin_dialogue(str(line[1]))
 	%Portrait.texture = _art(str(line[2]))
 	remaining = maxf(3.4, 1.6 + float(str(line[1]).length()) / 15.0)
 	if shot_index == 5:
 		AudioManager.play_sfx("sfx_beta_start")
 
+func _begin_dialogue(line: String) -> void:
+	%Dialogue.text = line
+	%Dialogue.visible_characters = 0
+	reveal_count = 0.0
+	next_tick = 1
+
+func _reveal_dialogue(delta: float) -> void:
+	var length: int = %Dialogue.get_total_character_count()
+	if %Dialogue.visible_characters >= length:
+		return
+	reveal_count += delta * 38.0
+	var count := mini(floori(reveal_count), length)
+	%Dialogue.visible_characters = count
+	if count >= next_tick:
+		AudioManager.play_sfx("sfx_puzzle_move", -32.0, 1.55)
+		next_tick = count + 5
+
 func _process(delta: float) -> void:
 	if has_finished:
 		return
+	_reveal_dialogue(delta)
 	var pressed: bool = Input.is_key_pressed(KEY_SPACE)
 	simulate_space_hold(delta, pressed)
 	if pressed or has_finished:
@@ -114,7 +134,7 @@ func get_skip_progress() -> float:
 
 func _update_skip_display() -> void:
 	%SkipBar.value = get_skip_progress() * 100.0
-	%Skip.text = "SAHNEYİ ATLAMAK İÇİN [SPACE] BASILI TUTUN (%.1f / 5.0 sn)" % skip_hold_time
+	%Skip.text = "[SPACE] Basılı tut   %.1f / 5.0 sn" % skip_hold_time
 
 func finish_cutscene() -> void:
 	if has_finished:

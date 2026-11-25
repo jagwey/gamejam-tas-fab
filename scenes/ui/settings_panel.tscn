@@ -3,254 +3,433 @@
 [ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
 [ext_resource type="Script" path="res://scripts/systems/settings_panel.gd" id="script"]
 
-[node name="SettingsPanel" type="Control" ]
+[node name="SettingsPanel" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 theme = ExtResource("theme")
 script = ExtResource("script")
 process_mode = 3
 
-[node name="Shade" type="ColorRect" parent="." ]
+[node name="Shade" type="ColorRect" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-color = Color(0.012,0.022,0.036,0.98)
+color = Color(0.029, 0.045, 0.064, 0.96)
 
-[node name="Frame" type="Panel" parent="." ]
-offset_left = 253.0
-offset_top = 42.0
-offset_right = 1027.0
-offset_bottom = 678.0
-mouse_filter = 2
+[node name="Center" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
 
-[node name="Accent" type="ColorRect" parent="." ]
-offset_left = 253.0
-offset_top = 42.0
-offset_right = 1027.0
-offset_bottom = 45.0
-mouse_filter = 2
-color = Color(0.33, 0.93, 0.89, 1)
-
-[node name="Heading" type="Label" parent="." ]
+[node name="SettingsCard" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
-offset_left = 303.0
-offset_top = 72.0
-offset_right = 903.0
-offset_bottom = 128.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 41
-theme_override_colors/font_color = Color(0.92, 0.95, 0.93, 1)
+custom_minimum_size = Vector2(860, 590)
+
+[node name="Inset" type="MarginContainer" parent="Center/SettingsCard"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="Body" type="VBoxContainer" parent="Center/SettingsCard/Inset"]
+theme_override_constants/separation = 12
+
+[node name="Heading" type="Label" parent="Center/SettingsCard/Inset/Body"]
+unique_name_in_owner = true
 text = "AYARLAR"
-horizontal_alignment = 0
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 36
 
-[node name="SensitivityLabel" type="Label" parent="." ]
+[node name="Tabs" type="TabContainer" parent="Center/SettingsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 304.0
-offset_top = 153.0
-offset_right = 540.0
-offset_bottom = 190.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
+size_flags_vertical = 3
+
+[node name="Oynanış" type="MarginContainer" parent="Center/SettingsCard/Inset/Body/Tabs"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Rows" type="VBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış"]
+theme_override_constants/separation = 12
+
+[node name="SensitivityRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="SensitivityLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/SensitivityRow"]
+unique_name_in_owner = true
 text = "Mouse Hassasiyeti"
-horizontal_alignment = 0
-vertical_alignment = 1
+size_flags_horizontal = 3
 
-[node name="Sensitivity" type="HSlider" parent="." ]
+[node name="Sensitivity" type="HSlider" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/SensitivityRow"]
 unique_name_in_owner = true
-offset_left = 543.0
-offset_top = 153.0
-offset_right = 868.0
-offset_bottom = 191.0
-min_value = 0.05
-max_value = 1
+custom_minimum_size = Vector2(206, 0)
+min_value = 0.01
+max_value = 2
 step = 0.01
 
-[node name="SensitivityValue" type="Label" parent="." ]
+[node name="SensitivityValue" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/SensitivityRow"]
 unique_name_in_owner = true
-offset_left = 876.0
-offset_top = 153.0
-offset_right = 974.0
-offset_bottom = 190.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
 text = ""
+custom_minimum_size = Vector2(64, 0)
 horizontal_alignment = 2
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
 
-[node name="FovLabel" type="Label" parent="." ]
+[node name="FovRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="FovLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/FovRow"]
 unique_name_in_owner = true
-offset_left = 304.0
-offset_top = 201.0
-offset_right = 540.0
-offset_bottom = 238.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
 text = "Görüş Açısı (FOV)"
-horizontal_alignment = 0
-vertical_alignment = 1
+size_flags_horizontal = 3
 
-[node name="Fov" type="HSlider" parent="." ]
+[node name="Fov" type="HSlider" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/FovRow"]
 unique_name_in_owner = true
-offset_left = 543.0
-offset_top = 201.0
-offset_right = 868.0
-offset_bottom = 239.0
+custom_minimum_size = Vector2(206, 0)
 min_value = 75
 max_value = 120
 step = 1
 
-[node name="FovValue" type="Label" parent="." ]
+[node name="FovValue" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/FovRow"]
 unique_name_in_owner = true
-offset_left = 876.0
-offset_top = 201.0
-offset_right = 974.0
-offset_bottom = 238.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
 text = ""
+custom_minimum_size = Vector2(64, 0)
 horizontal_alignment = 2
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
 
-[node name="MasterLabel" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 304.0
-offset_top = 249.0
-offset_right = 540.0
-offset_bottom = 286.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
-text = "Ana Ses"
-horizontal_alignment = 0
-vertical_alignment = 1
+[node name="DifficultyRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
 
-[node name="Master" type="HSlider" parent="." ]
+[node name="DifficultyLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/DifficultyRow"]
 unique_name_in_owner = true
-offset_left = 543.0
-offset_top = 249.0
-offset_right = 868.0
-offset_bottom = 287.0
-min_value = 0
-max_value = 1
-step = 0.01
+text = "Zorluk Seviyesi"
+size_flags_horizontal = 3
 
-[node name="MasterValue" type="Label" parent="." ]
+[node name="Difficulty" type="OptionButton" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/DifficultyRow"]
 unique_name_in_owner = true
-offset_left = 876.0
-offset_top = 249.0
-offset_right = 974.0
-offset_bottom = 286.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
-text = ""
-horizontal_alignment = 2
-vertical_alignment = 1
+custom_minimum_size = Vector2(260, 0)
+item_count = 2
+popup/item_0/text = "Normal"
+popup/item_0/id = 0
+popup/item_1/text = "Bordo Bereli (Zor)"
+popup/item_1/id = 1
 
-[node name="MusicLabel" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 304.0
-offset_top = 297.0
-offset_right = 540.0
-offset_bottom = 334.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
-text = "Müzik Sesi"
-horizontal_alignment = 0
-vertical_alignment = 1
+[node name="ShakeRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
 
-[node name="Music" type="HSlider" parent="." ]
+[node name="ShakeLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/ShakeRow"]
 unique_name_in_owner = true
-offset_left = 543.0
-offset_top = 297.0
-offset_right = 868.0
-offset_bottom = 335.0
-min_value = 0
-max_value = 1
-step = 0.01
-
-[node name="MusicValue" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 876.0
-offset_top = 297.0
-offset_right = 974.0
-offset_bottom = 334.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
-text = ""
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="SfxLabel" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 304.0
-offset_top = 345.0
-offset_right = 540.0
-offset_bottom = 382.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
-text = "Efekt Sesi"
-horizontal_alignment = 0
-vertical_alignment = 1
-
-[node name="Sfx" type="HSlider" parent="." ]
-unique_name_in_owner = true
-offset_left = 543.0
-offset_top = 345.0
-offset_right = 868.0
-offset_bottom = 383.0
-min_value = 0
-max_value = 1
-step = 0.01
-
-[node name="SfxValue" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 876.0
-offset_top = 345.0
-offset_right = 974.0
-offset_bottom = 382.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
-text = ""
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="Fullscreen" type="CheckButton" parent="." ]
-unique_name_in_owner = true
-offset_left = 302.0
-offset_top = 405.0
-offset_right = 976.0
-offset_bottom = 447.0
-text = "Tam Ekran"
-
-[node name="Shake" type="CheckButton" parent="." ]
-unique_name_in_owner = true
-offset_left = 302.0
-offset_top = 454.0
-offset_right = 976.0
-offset_bottom = 496.0
 text = "Kamera Sarsıntısı"
+size_flags_horizontal = 3
 
-[node name="CRT" type="CheckButton" parent="." ]
+[node name="Shake" type="CheckButton" parent="Center/SettingsCard/Inset/Body/Tabs/Oynanış/Rows/ShakeRow"]
 unique_name_in_owner = true
-offset_left = 302.0
-offset_top = 503.0
-offset_right = 976.0
-offset_bottom = 545.0
+tooltip_text = "Kamera Sarsıntısı"
+
+[node name="Görüntü" type="MarginContainer" parent="Center/SettingsCard/Inset/Body/Tabs"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Rows" type="VBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü"]
+theme_override_constants/separation = 12
+
+[node name="QualityRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="QualityLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/QualityRow"]
+unique_name_in_owner = true
+text = "Grafik Kalitesi"
+size_flags_horizontal = 3
+
+[node name="Quality" type="OptionButton" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/QualityRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+item_count = 3
+popup/item_0/text = "Düşük (Yüksek FPS)"
+popup/item_0/id = 0
+popup/item_1/text = "Orta"
+popup/item_1/id = 1
+popup/item_2/text = "Yüksek (Parlama)"
+popup/item_2/id = 2
+
+[node name="FullscreenRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="FullscreenLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/FullscreenRow"]
+unique_name_in_owner = true
+text = "Tam Ekran"
+size_flags_horizontal = 3
+
+[node name="Fullscreen" type="CheckButton" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/FullscreenRow"]
+unique_name_in_owner = true
+tooltip_text = "Tam Ekran"
+
+[node name="VsyncRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="VsyncLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/VsyncRow"]
+unique_name_in_owner = true
+text = "Dikey Eşitleme (VSync)"
+size_flags_horizontal = 3
+
+[node name="Vsync" type="CheckButton" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/VsyncRow"]
+unique_name_in_owner = true
+tooltip_text = "Dikey Eşitleme (VSync)"
+
+[node name="CRTRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="CRTLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/CRTRow"]
+unique_name_in_owner = true
 text = "CRT / VHS Efekti"
+size_flags_horizontal = 3
 
-[node name="Back" type="Button" parent="." ]
+[node name="CRT" type="CheckButton" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/CRTRow"]
 unique_name_in_owner = true
-offset_left = 777.0
-offset_top = 595.0
-offset_right = 973.0
-offset_bottom = 644.0
+tooltip_text = "CRT / VHS Efekti"
+
+[node name="ShowFpsRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="ShowFpsLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/ShowFpsRow"]
+unique_name_in_owner = true
+text = "FPS Göstergesi"
+size_flags_horizontal = 3
+
+[node name="ShowFps" type="CheckButton" parent="Center/SettingsCard/Inset/Body/Tabs/Görüntü/Rows/ShowFpsRow"]
+unique_name_in_owner = true
+tooltip_text = "FPS Göstergesi"
+
+[node name="Ses" type="MarginContainer" parent="Center/SettingsCard/Inset/Body/Tabs"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Rows" type="VBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Ses"]
+theme_override_constants/separation = 12
+
+[node name="MasterRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="MasterLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MasterRow"]
+unique_name_in_owner = true
+text = "Ana Ses"
+size_flags_horizontal = 3
+
+[node name="Master" type="HSlider" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MasterRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(206, 0)
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="MasterValue" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MasterRow"]
+unique_name_in_owner = true
+text = ""
+custom_minimum_size = Vector2(64, 0)
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+
+[node name="MusicRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="MusicLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MusicRow"]
+unique_name_in_owner = true
+text = "Müzik Sesi"
+size_flags_horizontal = 3
+
+[node name="Music" type="HSlider" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MusicRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(206, 0)
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="MusicValue" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/MusicRow"]
+unique_name_in_owner = true
+text = ""
+custom_minimum_size = Vector2(64, 0)
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+
+[node name="SfxRow" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows"]
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 14
+
+[node name="SfxLabel" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/SfxRow"]
+unique_name_in_owner = true
+text = "Efekt Sesi"
+size_flags_horizontal = 3
+
+[node name="Sfx" type="HSlider" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/SfxRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(206, 0)
+min_value = 0
+max_value = 1
+step = 0.01
+
+[node name="SfxValue" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Ses/Rows/SfxRow"]
+unique_name_in_owner = true
+text = ""
+custom_minimum_size = Vector2(64, 0)
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+
+[node name="Kontroller" type="MarginContainer" parent="Center/SettingsCard/Inset/Body/Tabs"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Rows" type="GridContainer" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller"]
+columns = 2
+theme_override_constants/v_separation = 3
+theme_override_constants/h_separation = 32
+
+[node name="Key0" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "WASD"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action0" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Hareket"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key1" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Sol / Sağ Tık"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action1" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Ateş / Nişan al"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key2" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Shift"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action2" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Koş"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key3" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Ctrl"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action3" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Çömel"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key4" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Space"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action4" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Zıpla"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key5" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "R"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action5" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Şarjör değiştir"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key6" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "E"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action6" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Etkileşim"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key7" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "F"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action7" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "BETA cihazını kullan"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key8" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Q"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action8" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Yakın dövüş"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key9" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "1 / 2 / 3"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action9" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Silah seç"
+theme_override_font_sizes/font_size = 17
+
+[node name="Key10" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "ESC"
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+theme_override_font_sizes/font_size = 17
+
+[node name="Action10" type="Label" parent="Center/SettingsCard/Inset/Body/Tabs/Kontroller/Rows"]
+unique_name_in_owner = true
+text = "Duraklat / Geri"
+theme_override_font_sizes/font_size = 17
+
+[node name="Footer" type="HBoxContainer" parent="Center/SettingsCard/Inset/Body"]
+theme_override_constants/separation = 12
+
+[node name="Reset" type="Button" parent="Center/SettingsCard/Inset/Body/Footer"]
+unique_name_in_owner = true
+text = "Varsayılana Sıfırla"
+
+[node name="Space" type="Control" parent="Center/SettingsCard/Inset/Body/Footer"]
+size_flags_horizontal = 3
+
+[node name="Back" type="Button" parent="Center/SettingsCard/Inset/Body/Footer"]
+unique_name_in_owner = true
 text = "Geri"
+custom_minimum_size = Vector2(140, 42)

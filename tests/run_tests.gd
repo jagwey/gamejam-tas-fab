@@ -1,5 +1,5 @@
 extends SceneTree
-## BETA PROTOCOL — headless acceptance tests (22 criteria).
+## BETA PROTOCOL — headless acceptance tests (28 criteria, v0.3.0).
 ## Run:
 ##   Godot_v4.7.2-stable_win64_console.exe --headless --audio-driver Dummy --path <project> --script res://tests/run_tests.gd
 ## Uses the real autoloads under /root, real scenes and real physics steps.
@@ -17,9 +17,9 @@ const SEQUENCE_PUZZLE: String = "res://scenes/puzzles/sequence_puzzle.tscn"
 const VOLKOV_SCRIPT: String = "res://scripts/systems/volkov_boss.gd"
 const INTEGRITY_ROOTS: Array[String] = ["res://assets", "res://scenes", "res://scripts", "res://tests"]
 const INTEGRITY_EXTENSIONS: Array[String] = ["tscn", "tres", "gdshader", "png", "wav", "gd"]
-const MIN_PNG: int = 123
+const MIN_PNG: int = 141
 const MIN_WAV: int = 31
-const TEST_COUNT: int = 22
+const TEST_COUNT: int = 28
 const CUTSCENE: String = "res://scenes/cutscenes/opening_cutscene.tscn"
 const PUZZLE: String = "res://scenes/puzzles/moving_lock_puzzle.tscn"
 const GUARD: String = "res://scenes/enemies/enemy_guard_lv1.tscn"
@@ -27,6 +27,17 @@ const MERC: String = "res://scenes/enemies/enemy_merc_lv2.tscn"
 const SETTINGS_SCRIPT: String = "res://scripts/managers/settings_manager.gd"
 const LOAD_EXTENSIONS: Array[String] = ["tscn", "tres", "gdshader", "png", "wav"]
 const SCAN_ROOTS: Array[String] = ["res://assets", "res://scenes", "res://scripts", "res://shaders"]
+const SETTINGS_KEYS: Array[String] = ["mouse_sensitivity", "horizontal_fov", "master_volume", "music_volume", "sfx_volume",
+	"fullscreen", "camera_shake_enabled", "crt_enabled", "graphics_quality", "vsync_enabled", "show_fps", "difficulty"]
+const GUARD_STATS: String = "res://scripts/resources/enemies/enemy_lv1_guard.tres"
+const CRT_SHADER: String = "res://assets/shaders/crt_vhs.gdshader"
+const WEAPON_DIR: String = "res://assets/sprites/weapons"
+const CUTSCENE_BG_DIR: String = "res://assets/sprites/cutscenes"
+const PORTRAIT_DIR: String = "res://assets/portraits"
+const ENEMY_PREFIXES: Array[String] = ["guard_lv1", "merc_lv2", "heavy_lv3", "commando_lv4", "tech_lv1", "volkov_boss"]
+const FLOORS: Array[String] = [FLOOR_1, FLOOR_2, FLOOR_3, FLOOR_4, FLOOR_5]
+## Decorative layers allowed to overlap HUD panels / puzzle bars (viewmodel art, alignment guide).
+const OVERLAP_ALLOW: Array[String] = ["HUD/WeaponSprite", "Track/Guide"]
 
 var _results: Array[Dictionary] = []
 var _current_test: String = ""
@@ -166,7 +177,7 @@ func _aim_at(pl: Node3D, target: Vector3) -> void:
 
 func _backup_settings() -> void:
 	var s: Node = _settings()
-	for key in ["mouse_sensitivity", "horizontal_fov", "master_volume", "music_volume", "sfx_volume", "fullscreen", "camera_shake_enabled", "crt_enabled"]:
+	for key in SETTINGS_KEYS:
 		_settings_backup[key] = s.get(key)
 
 
@@ -174,6 +185,8 @@ func _restore_settings() -> void:
 	var s: Node = _settings()
 	for key in _settings_backup.keys():
 		s.set(key, _settings_backup[key])
+	if s.has_method("save_settings"):
+		s.call("save_settings")
 
 
 # ------------------------------------------------------------------ run
@@ -185,6 +198,7 @@ func _run() -> void:
 	if save_existed:
 		save_backup = _sm().call("load_progress") as Dictionary
 	_sm().call("clear_save")
+	_settings().call("set_difficulty", 0)
 
 	await _t01_main_menu()
 	await _t02_fov_and_shake()
@@ -210,6 +224,12 @@ func _run() -> void:
 	await _t21_ending()
 	await _t16_resources()
 	await _t22_integrity()
+	await _t23_beta_evolution()
+	await _t24_difficulty()
+	await _t25_sprite_dimensions()
+	await _t26_ui_overlap()
+	await _t27_render_performance()
+	await _t28_hint_and_radio()
 
 	# Cleanup: test saves, settings, pause state, audio.
 	_sm().call("clear_save")
@@ -239,7 +259,7 @@ func _run() -> void:
 # ------------------------------------------------------------------ 1. main menu
 
 func _t01_main_menu() -> void:
-	_begin("01 Main menu: 5 buttons + 8 settings controls")
+	_begin("01 Main menu: 5 buttons, 4-tab settings (5 sliders/5 toggles/2 options), card hides")
 	var ok: bool = await _goto(MAIN_MENU)
 	_check(ok, "main menu scene loaded")
 	if ok:
@@ -259,13 +279,26 @@ func _t01_main_menu() -> void:
 		var panel: Control = scene.get_node_or_null("%SettingsPanel") as Control
 		_check(panel != null, "settings panel present")
 		if panel != null:
-			var controls: int = 0
-			for c in panel.get_children():
-				if c is HSlider or c is CheckButton:
-					controls += 1
-			_check(controls == 8, "8 settings controls (got %d)" % controls)
+			var tabs: TabContainer = panel.get_node_or_null("%Tabs") as TabContainer
+			_check(tabs != null and tabs.get_tab_count() == 4, "%%Tabs has 4 tabs (got %d)" % (tabs.get_tab_count() if tabs != null else -1))
+			var sliders: int = panel.find_children("*", "HSlider", true, false).size()
+			var toggles: int = panel.find_children("*", "CheckButton", true, false).size()
+			var options: int = panel.find_children("*", "OptionButton", true, false).size()
+			_check(sliders >= 5, "HSlider >= 5 (got %d)" % sliders)
+			_check(toggles >= 5, "CheckButton >= 5 (got %d)" % toggles)
+			_check(options >= 2, "OptionButton >= 2 (got %d)" % options)
 			var fov: HSlider = panel.get_node_or_null("%Fov") as HSlider
 			_check(fov != null and is_equal_approx(fov.min_value, 75.0) and is_equal_approx(fov.max_value, 120.0), "FOV slider range 75..120")
+			var card: Control = scene.get_node_or_null("%MenuCard") as Control
+			var settings_btn: Button = scene.get_node_or_null("%Settings") as Button
+			_check(card != null and card.visible and not panel.visible, "menu card visible, panel hidden at start")
+			if card != null and settings_btn != null:
+				settings_btn.pressed.emit()
+				await _frames(2)
+				_check(panel.visible and not card.visible, "opening settings hides %MenuCard")
+				panel.call("close_panel")
+				await _frames(2)
+				_check(card.visible and not panel.visible, "closing settings restores %MenuCard")
 	_end()
 
 
@@ -434,15 +467,22 @@ func _t05_enemy_awareness() -> void:
 # ------------------------------------------------------------------ 6. stats / death
 
 func _t06_enemy_stats_and_death() -> void:
-	_begin("06 Enemy stats (40/5/0.9, 65/8/1.2) and death -> corpse")
+	_begin("06 Enemy stats (40/6/0.9, 85/9/1.15 burst 2), 3-frame death -> corpse")
 	var guard: EnemyBase = _spawn(GUARD, Vector3(-6.0, 0.0, -30.0), 0.0)
 	var merc: EnemyBase = _spawn(MERC, Vector3(6.0, 0.0, -30.0), 0.0)
 	await _physics(2)
 	var g: EnemyStats = guard.stats
 	var m: EnemyStats = merc.stats
-	_check(is_equal_approx(g.max_health, 40.0) and is_equal_approx(g.damage, 5.0) and is_equal_approx(g.attack_interval, 0.9), "Lv1 guard 40/5/0.9")
-	_check(is_equal_approx(m.max_health, 65.0) and is_equal_approx(m.damage, 8.0) and is_equal_approx(m.attack_interval, 1.2), "Lv2 merc 65/8/1.2")
-	_check(is_equal_approx(guard.health.current_health, 40.0) and is_equal_approx(merc.health.current_health, 65.0), "spawned at full HP")
+	_check(is_equal_approx(g.max_health, 40.0) and is_equal_approx(g.damage, 6.0) and is_equal_approx(g.attack_interval, 0.9),
+		"Lv1 guard 40/6/0.9 (got %.0f/%.1f/%.2f)" % [g.max_health, g.damage, g.attack_interval])
+	_check(is_equal_approx(m.max_health, 85.0) and is_equal_approx(m.damage, 9.0) and is_equal_approx(m.attack_interval, 1.15),
+		"Lv2 merc 85/9/1.15 (got %.0f/%.1f/%.2f)" % [m.max_health, m.damage, m.attack_interval])
+	_check(m.burst_count == 2, "Lv2 merc burst_count 2 (got %d)" % m.burst_count)
+	_check(is_equal_approx(guard.health.current_health, 40.0) and is_equal_approx(merc.health.current_health, 85.0), "spawned at full HP")
+	var death_frames: int = 0
+	if merc.sprite != null and merc.sprite.sprite_frames != null and merc.sprite.sprite_frames.has_animation("death"):
+		death_frames = merc.sprite.sprite_frames.get_frame_count("death")
+	_check(death_frames >= 3, "death animation >= 3 frames (got %d)" % death_frames)
 	var killed: bool = merc.take_damage(1000.0)
 	await _physics(2)
 	_check(killed, "lethal damage reports kill")
@@ -507,7 +547,7 @@ func _spawn_corpse(path: String, pos: Vector3) -> EnemyBase:
 
 
 func _t08_beta_heal() -> void:
-	_begin("08 BETA heal table + real 1 s channel on Lv2 corpse")
+	_begin("08 BETA heal table, Lv2 absorption rewards, real 0.85 s channel 50/100 -> 71/106")
 	var table: Array[float] = []
 	for lvl in range(1, 7):
 		table.append(BetaDeviceController.calculate_heal_amount(100.0, lvl))
@@ -517,18 +557,27 @@ func _t08_beta_heal() -> void:
 		if not is_equal_approx(table[i], expected[i]):
 			table_ok = false
 	_check(table_ok, "heal table 5,10,15,20,25,25 (got %s)" % str(table))
+	var rw: Dictionary = BetaDeviceController.calculate_absorption_rewards(100.0, 2)
+	var rw_bonus: float = float(rw.get("max_hp_bonus", 0.0))
+	var rw_heal: float = float(rw.get("heal_amount", 0.0))
+	var rw_ess: int = int(rw.get("essence", 0))
+	_check(is_equal_approx(rw_bonus, 6.0) and is_equal_approx(rw_heal, 21.0) and rw_ess == 25,
+		"Lv2 rewards +6 max / +21 heal / 25 essence (got %.1f/%.1f/%d)" % [rw_bonus, rw_heal, rw_ess])
 	await _clear_enemies()
 	var refs: Array = _prep_beta(50.0)
 	var hc: HealthComponent = refs[1] as HealthComponent
 	var beta: BetaDeviceController = refs[2] as BetaDeviceController
+	_reset_beta(beta)
 	var corpse: EnemyBase = await _spawn_corpse(MERC, Vector3(0.0, 0.0, -15.6))
 	_check(beta.find_nearest_corpse() == corpse, "corpse found in range")
 	_check(beta.try_start_beta(), "BETA channel started")
-	await _seconds(0.5)
-	_check(beta.is_channeling and is_equal_approx(hc.current_health, 50.0), "still channeling at 0.5 s, no heal yet")
-	await _seconds(0.75)
-	_check(not beta.is_channeling, "channel completed")
-	_check(is_equal_approx(hc.current_health, 60.0), "Lv2 corpse healed +10 (got %.1f)" % hc.current_health)
+	await _seconds(0.4)
+	_check(beta.is_channeling and is_equal_approx(hc.current_health, 50.0), "still channeling at 0.4 s, no heal yet")
+	await _seconds(0.7)
+	_check(not beta.is_channeling, "channel completed before 1.1 s")
+	_check(is_equal_approx(hc.current_health, 71.0) and is_equal_approx(hc.max_health, 106.0),
+		"Lv2 absorption 50/100 -> 71/106 (got %.1f/%.1f)" % [hc.current_health, hc.max_health])
+	_check(beta.bio_essence == 25, "bio_essence 25 (got %d)" % beta.bio_essence)
 	_end()
 
 
@@ -537,6 +586,7 @@ func _t09_single_use() -> void:
 	var refs: Array = _prep_beta(60.0)
 	var hc: HealthComponent = refs[1] as HealthComponent
 	var beta: BetaDeviceController = refs[2] as BetaDeviceController
+	beta.overdrive_time = 0.0
 	var corpses: Array[Node] = get_nodes_in_group("dead_enemies")
 	var used: EnemyBase = null
 	for n in get_tree_nodes_enemies():
@@ -550,6 +600,13 @@ func _t09_single_use() -> void:
 	_end()
 
 
+func _reset_beta(beta: BetaDeviceController) -> void:
+	beta.cancel_beta("test_reset")
+	beta.bio_essence = 0
+	beta.beta_tier = 1
+	beta.overdrive_time = 0.0
+
+
 func get_tree_nodes_enemies() -> Array[EnemyBase]:
 	var out: Array[EnemyBase] = []
 	for n in current_scene.get_children():
@@ -558,23 +615,43 @@ func get_tree_nodes_enemies() -> Array[EnemyBase]:
 	return out
 
 
-func _t10_heal_cap() -> void:
-	_begin("10 Heal caps at 100; full HP refuses without consuming")
+## One real Lv2 absorption from the given HP state; returns true when the channel completed.
+func _absorb_lv2(hc: HealthComponent, beta: BetaDeviceController, hp: float, max_hp: float) -> bool:
 	await _clear_enemies()
-	var refs: Array = _prep_beta(95.0)
-	var hc: HealthComponent = refs[1] as HealthComponent
-	var beta: BetaDeviceController = refs[2] as BetaDeviceController
+	hc.set_health(hp, max_hp)
+	beta.overdrive_time = 0.0
 	var corpse: EnemyBase = await _spawn_corpse(MERC, Vector3(0.0, 0.0, -15.6))
-	_check(beta.try_start_beta(), "channel started at 95 HP")
-	await _seconds(1.25)
-	_check(is_equal_approx(hc.current_health, 100.0), "capped at 100 (got %.1f)" % hc.current_health)
-	_check(corpse.is_harvested, "first corpse consumed")
+	var started: bool = beta.try_start_beta()
+	await _seconds(1.1)
+	var done: bool = started and not beta.is_channeling and corpse.is_harvested
 	corpse.free()
 	await _physics(2)
-	var fresh: EnemyBase = await _spawn_corpse(MERC, Vector3(0.0, 0.0, -15.6))
-	_check(not beta.try_start_beta(), "try_start_beta false at 100 HP")
-	_check(not beta.is_channeling and fresh.can_be_harvested() and not fresh.is_harvested, "corpse left intact")
-	fresh.free()
+	return done
+
+
+func _t10_heal_cap() -> void:
+	_begin("10 Absorb at full HP (100 -> 106/106), 250 cap, absorb at cap still grants essence/overdrive")
+	var refs: Array = _prep_beta(100.0)
+	var hc: HealthComponent = refs[1] as HealthComponent
+	var beta: BetaDeviceController = refs[2] as BetaDeviceController
+	_reset_beta(beta)
+	var ok1: bool = await _absorb_lv2(hc, beta, 100.0, 100.0)
+	_check(ok1, "BETA allowed and completed at 100/100")
+	_check(is_equal_approx(hc.current_health, 106.0) and is_equal_approx(hc.max_health, 106.0),
+		"100/100 -> 106/106 (got %.1f/%.1f)" % [hc.current_health, hc.max_health])
+	var ok2: bool = await _absorb_lv2(hc, beta, 248.0, 248.0)
+	_check(ok2, "absorption completed at 248/248")
+	_check(is_equal_approx(hc.current_health, 250.0) and is_equal_approx(hc.max_health, 250.0),
+		"248/248 + Lv2 caps at 250/250 (got %.1f/%.1f)" % [hc.current_health, hc.max_health])
+	var ess_before: int = beta.bio_essence
+	var ok3: bool = await _absorb_lv2(hc, beta, 250.0, 250.0)
+	_check(ok3, "absorption still allowed at 250/250")
+	_check(beta.bio_essence == ess_before + 25, "essence awarded at cap (%d -> %d)" % [ess_before, beta.bio_essence])
+	_check(beta.is_overdrive_active(), "overdrive active after capped absorption")
+	_check(is_equal_approx(hc.max_health, 250.0) and is_equal_approx(hc.current_health, 250.0),
+		"max stays 250 (got %.1f/%.1f)" % [hc.current_health, hc.max_health])
+	_reset_beta(beta)
+	hc.set_health(100.0, 100.0)
 	hc.invulnerable = false
 	await _physics(2)
 	_end()
@@ -829,7 +906,7 @@ func _check_enemy_kind(prefix: String, hp: float, dmg: float, interval: float, l
 			else:
 				width = tex.get_width()
 	_check(count > 0, "%s present (found %d)" % [label, count])
-	_check(stats_ok, "%s stats %.0f HP / %.0f dmg / %.1fs" % [label, hp, dmg, interval])
+	_check(stats_ok, "%s stats %.0f HP / %.0f dmg / %.2fs" % [label, hp, dmg, interval])
 	_check(sprite_ok, "%s non-placeholder %s sprite (width %d)" % [label, prefix, width])
 
 
@@ -863,8 +940,8 @@ func _t18_floor3_lab() -> void:
 	_check(ok, "floor_03 loaded")
 	if ok:
 		_arm_player()
-		_check_enemy_kind("heavy_lv3", 100.0, 12.0, 1.5, "Lv3 Heavy Guard")
-		_check_enemy_kind("tech_lv1", 40.0, 5.0, 0.9, "Lv1 Armed Technician")
+		_check_enemy_kind("heavy_lv3", 155.0, 16.0, 1.4, "Lv3 Heavy Guard")
+		_check_enemy_kind("tech_lv1", 48.0, 7.0, 0.9, "Lv1 Armed Technician")
 		await _check_door_puzzle("Interactables/LabSecurityDoor", BIO_PUZZLE)
 		_check_exit(4)
 	_end()
@@ -878,8 +955,8 @@ func _t19_floor4_vip() -> void:
 	_check(ok, "floor_04 loaded")
 	if ok:
 		_arm_player()
-		_check_enemy_kind("commando_lv4", 140.0, 17.0, 1.9, "Lv4 Elite Commando")
-		_check_enemy_kind("merc_lv2", 65.0, 8.0, 1.2, "Lv2 Mercenary")
+		_check_enemy_kind("commando_lv4", 220.0, 19.0, 1.55, "Lv4 Elite Commando")
+		_check_enemy_kind("merc_lv2", 85.0, 9.0, 1.15, "Lv2 Mercenary")
 		await _check_door_puzzle("Interactables/VaultSecurityDoor", SEQUENCE_PUZZLE)
 		_check_exit(5)
 	_end()
@@ -888,7 +965,7 @@ func _t19_floor4_vip() -> void:
 # ------------------------------------------------------------------ 20. floor 5 boss
 
 func _t20_floor5_boss() -> void:
-	_begin("20 Floor 5: Volkov 3-phase boss, reinforcements, Lv5 corpse heal, reactor console")
+	_begin("20 Floor 5: Volkov 800 HP 3-phase boss, Lv5 absorption 60/100 -> 110/120, reactor console, rain <= 160")
 	var ok: bool = await _goto(FLOOR_5)
 	_check(ok, "floor_05 loaded")
 	if not ok:
@@ -900,14 +977,16 @@ func _t20_floor5_boss() -> void:
 	var console: Node = current_scene.get_node_or_null("Interactables/ReactorConsole")
 	_check(boss != null, "Enemies/VolkovBoss spawned")
 	_check(console != null, "Interactables/ReactorConsole spawned")
-	_check(current_scene.get_node_or_null("Rain") is CPUParticles3D, "rain particles spawned")
+	var rain: CPUParticles3D = current_scene.get_node_or_null("Rain") as CPUParticles3D
+	_check(rain != null, "rain particles spawned")
+	_check(rain != null and rain.amount <= 160, "rain amount <= 160 (got %d)" % (rain.amount if rain != null else -1))
 	if boss == null or console == null or enemies_root == null:
 		_end()
 		return
 	var script_path: String = (boss.get_script() as Script).resource_path
 	_check(script_path == VOLKOV_SCRIPT, "boss uses volkov_boss.gd (got %s)" % script_path)
 	_check(boss.is_boss, "is_boss flag")
-	_check(boss.health.max_health >= 400.0, "max_health >= 400 (got %.0f)" % boss.health.max_health)
+	_check(is_equal_approx(boss.health.max_health, 800.0), "Volkov max_health 800 (got %.0f)" % boss.health.max_health)
 	var tex: Texture2D = null
 	if boss.sprite != null and boss.sprite.sprite_frames != null and boss.sprite.sprite_frames.has_animation("idle"):
 		tex = boss.sprite.sprite_frames.get_frame_texture("idle", 0)
@@ -948,8 +1027,10 @@ func _t20_floor5_boss() -> void:
 	_check(_hits("boss_dead") == 1, "boss_defeated emitted once")
 	_check(bool(console.get("is_active")), "ReactorConsole activated")
 	_check(boss.can_be_harvested(), "Lv5 corpse harvestable")
-	_check(boss.stats.level == 5 and is_equal_approx(BetaDeviceController.calculate_heal_amount(100.0, boss.stats.level), 25.0),
-		"Lv5 heal amount = 25")
+	var rw5: Dictionary = BetaDeviceController.calculate_absorption_rewards(100.0, boss.stats.level)
+	_check(boss.stats.level == 5 and is_equal_approx(float(rw5.get("max_hp_bonus", 0.0)), 20.0)
+		and is_equal_approx(float(rw5.get("heal_amount", 0.0)), 50.0) and int(rw5.get("essence", 0)) == 100,
+		"Lv5 rewards +20 max / +50 heal / 100 essence")
 	if shared != null:
 		_check(not is_equal_approx(boss.stats.move_speed, shared.move_speed), "phase tweaks did not mutate shared stats")
 
@@ -958,12 +1039,16 @@ func _t20_floor5_boss() -> void:
 	var hc: HealthComponent = _ap(pl, "health_component") as HealthComponent
 	var beta: BetaDeviceController = _ap(pl, "beta_device") as BetaDeviceController
 	hc.set_health(60.0, 100.0)
+	beta.overdrive_time = 0.0
+	var ess0: int = beta.bio_essence
 	_place_player(pl, boss.global_position + Vector3(0.0, 0.05, 1.6), 0.0)
 	await _physics(2)
 	_check(beta.find_nearest_corpse() == boss, "BETA finds Volkov corpse")
 	_check(beta.try_start_beta(), "BETA channel started on Volkov")
 	await _seconds(1.25)
-	_check(is_equal_approx(hc.current_health, 85.0), "Volkov corpse healed +25 (got %.1f)" % hc.current_health)
+	_check(is_equal_approx(hc.current_health, 110.0) and is_equal_approx(hc.max_health, 120.0),
+		"Volkov absorption 60/100 -> 110/120 (got %.1f/%.1f)" % [hc.current_health, hc.max_health])
+	_check(beta.bio_essence == ess0 + 100, "Volkov essence +100 (%d -> %d)" % [ess0, beta.bio_essence])
 	_check(boss.is_harvested and not boss.can_be_harvested(), "Volkov corpse drained")
 	hc.invulnerable = false
 	_end()
@@ -1062,3 +1147,393 @@ func _collect_ext(dir_path: String, out: Array[String], exts: Array[String]) -> 
 				out.append(full)
 		entry = dir.get_next()
 	dir.list_dir_end()
+
+
+# ------------------------------------------------------------------ 23. BETA evolution
+
+func _t23_beta_evolution() -> void:
+	_begin("23 BETA evolution: tiers 0/45/120/230/370, T5 multipliers, fast channel, overdrive, T5 leech, carryover")
+	var ok: bool = await _goto(FLOOR_1)
+	_check(ok, "floor_01 loaded")
+	var pl: Node3D = _player()
+	if not ok or pl == null:
+		_end()
+		return
+	var hc: HealthComponent = _ap(pl, "health_component") as HealthComponent
+	var beta: BetaDeviceController = _ap(pl, "beta_device") as BetaDeviceController
+	var wm: WeaponManager = _ap(pl, "weapon_manager") as WeaponManager
+	hc.invulnerable = true
+	_reset_beta(beta)
+
+	_check(str(BetaDeviceController.TIER_THRESHOLDS) == "[0, 45, 120, 230, 370]",
+		"TIER_THRESHOLDS [0,45,120,230,370] (got %s)" % str(BetaDeviceController.TIER_THRESHOLDS))
+	var cases: Array[Vector2i] = [Vector2i(0, 1), Vector2i(44, 1), Vector2i(45, 2), Vector2i(119, 2), Vector2i(120, 3),
+		Vector2i(229, 3), Vector2i(230, 4), Vector2i(369, 4), Vector2i(370, 5), Vector2i(5000, 5)]
+	var tier_ok: bool = true
+	for c in cases:
+		if BetaDeviceController.tier_for_essence(c.x) != c.y:
+			tier_ok = false
+			_check(false, "tier_for_essence(%d) == %d (got %d)" % [c.x, c.y, BetaDeviceController.tier_for_essence(c.x)])
+	_check(tier_ok, "tier_for_essence thresholds")
+
+	beta.beta_tier = 1
+	var d1: float = beta.get_damage_multiplier()
+	var r1: float = beta.get_reload_speed_multiplier()
+	var m1: float = beta.get_move_speed_multiplier()
+	beta.beta_tier = 5
+	var d5: float = beta.get_damage_multiplier()
+	var r5: float = beta.get_reload_speed_multiplier()
+	var m5: float = beta.get_move_speed_multiplier()
+	_check(is_equal_approx(d5 / d1, 1.45), "T5/T1 damage x1.45 (got %.3f)" % (d5 / d1))
+	_check(is_equal_approx(r5 / r1, 1.35), "T5/T1 reload x1.35 (got %.3f)" % (r5 / r1))
+	_check(is_equal_approx(m5 / m1, 1.15), "T5/T1 move x1.15 (got %.3f)" % (m5 / m1))
+
+	beta.beta_tier = 3
+	var ch3: float = beta.get_channel_duration()
+	beta.beta_tier = 4
+	var ch4: float = beta.get_channel_duration()
+	beta.beta_tier = 5
+	var ch5: float = beta.get_channel_duration()
+	_check(is_equal_approx(ch3, 0.85) and is_equal_approx(ch4, 0.60) and is_equal_approx(ch5, 0.60),
+		"channel 0.85 s below T4, 0.60 s at T4+ (got %.2f/%.2f/%.2f)" % [ch3, ch4, ch5])
+
+	beta.overdrive_time = BetaDeviceController.OVERDRIVE_DURATION
+	_check(is_equal_approx(BetaDeviceController.OVERDRIVE_DURATION, 5.0), "OVERDRIVE_DURATION 5.0 s")
+	_check(beta.is_overdrive_active(), "overdrive active at 5.0 s")
+	_check(is_equal_approx(beta.get_move_speed_multiplier(), m5 * 1.12), "overdrive boosts move speed x1.12")
+	beta.process_overdrive(2.0)
+	_check(absf(beta.overdrive_time - 3.0) < 0.05, "overdrive decays 5.0 -> 3.0 (got %.2f)" % beta.overdrive_time)
+	beta.process_overdrive(10.0)
+	_check(is_zero_approx(beta.overdrive_time) and not beta.is_overdrive_active(), "overdrive expires")
+
+	# Tier 5 melee kill leeches +6 HP.
+	await _clear_enemies()
+	beta.bio_essence = 370
+	beta.beta_tier = 5
+	hc.set_health(100.0, 200.0)
+	_place_player(pl, Vector3(0.0, 0.05, -14.0), 0.0)
+	var target: EnemyBase = _spawn(GUARD, Vector3(0.0, 0.0, -15.6), 0.0)
+	await _physics(4)
+	_aim_at(pl, target.global_position + Vector3(0.0, 1.0, 0.0))
+	await _seconds(0.8)
+	target.health.current_health = 1.0
+	hc.set_health(100.0, 200.0)
+	_check(wm.quick_melee(), "T5 quick melee swung")
+	await _physics(2)
+	_check(target.is_dead, "melee killed the target")
+	_check(is_equal_approx(hc.current_health, 106.0), "T5 melee kill leeched +6 HP (got %.1f)" % hc.current_health)
+	await _clear_enemies()
+
+	# load_floor carries max_health, bio_essence and beta_tier.
+	hc.set_health(150.0, 180.0)
+	beta.bio_essence = 380
+	beta.beta_tier = 5
+	beta.overdrive_time = 0.0
+	_gm().call("load_floor", 2, false)
+	var moved: bool = await _wait_scene(FLOOR_2)
+	_check(moved, "load_floor(2) reached floor_02")
+	var np: Node3D = _player()
+	_check(np != null and np != pl, "new player spawned")
+	if np != null:
+		var nhc: HealthComponent = _ap(np, "health_component") as HealthComponent
+		var nbeta: BetaDeviceController = _ap(np, "beta_device") as BetaDeviceController
+		_check(is_equal_approx(nhc.max_health, 180.0) and is_equal_approx(nhc.current_health, 150.0),
+			"max_health/health carried (got %.1f/%.1f)" % [nhc.current_health, nhc.max_health])
+		_check(nbeta.bio_essence == 380 and nbeta.beta_tier == 5,
+			"bio_essence/beta_tier carried (got %d / T%d)" % [nbeta.bio_essence, nbeta.beta_tier])
+		nhc.invulnerable = true
+	_gm().set("player_carryover", {})
+	_end()
+
+
+# ------------------------------------------------------------------ 24. difficulty
+
+func _t24_difficulty() -> void:
+	_begin("24 Bordo Bereli difficulty: new enemy HP x1.25 / dmg x1.30 / speed x1.12, shared .tres untouched")
+	var shared: EnemyStats = load(GUARD_STATS) as EnemyStats
+	_check(shared != null, "guard stats .tres loads")
+	if shared == null or current_scene == null:
+		_end()
+		return
+	var base_hp: float = shared.max_health
+	var base_dmg: float = shared.damage
+	var base_speed: float = shared.move_speed
+	_settings().call("set_difficulty", 1)
+	_check(int(_settings().get("difficulty")) == 1, "difficulty set to 1")
+	var hard: EnemyBase = _spawn(GUARD, Vector3(0.0, 0.0, 30.0), 0.0)
+	await _physics(2)
+	_check(is_equal_approx(hard.stats.max_health, base_hp * 1.25) and is_equal_approx(hard.health.max_health, base_hp * 1.25),
+		"HP x1.25 (%.1f -> %.1f)" % [base_hp, hard.health.max_health])
+	_check(is_equal_approx(hard.stats.damage, base_dmg * 1.30), "damage x1.30 (%.2f -> %.2f)" % [base_dmg, hard.stats.damage])
+	_check(is_equal_approx(hard.stats.move_speed, base_speed * 1.12), "speed x1.12 (%.2f -> %.2f)" % [base_speed, hard.stats.move_speed])
+	_check(hard.stats != shared, "enemy uses a per-instance stats copy")
+	_check(is_equal_approx(shared.max_health, base_hp) and is_equal_approx(shared.damage, base_dmg) and is_equal_approx(shared.move_speed, base_speed),
+		"shared .tres unchanged (%.0f/%.1f/%.2f)" % [shared.max_health, shared.damage, shared.move_speed])
+	hard.free()
+	await _physics(1)
+	_settings().call("set_difficulty", 0)
+	var normal: EnemyBase = _spawn(GUARD, Vector3(0.0, 0.0, 30.0), 0.0)
+	await _physics(2)
+	_check(int(_settings().get("difficulty")) == 0 and is_equal_approx(normal.health.max_health, base_hp),
+		"difficulty restored to Normal (HP %.1f)" % normal.health.max_health)
+	normal.free()
+	await _physics(2)
+	_end()
+
+
+# ------------------------------------------------------------------ 25. sprite dimensions
+
+func _png_files(dir_path: String) -> PackedStringArray:
+	var out: PackedStringArray = PackedStringArray()
+	for f in DirAccess.get_files_at(dir_path):
+		if f.get_extension().to_lower() == "png":
+			out.append(dir_path.path_join(f))
+	return out
+
+
+func _t25_sprite_dimensions() -> void:
+	_begin("25 Sprites: 17 weapons 320x200, HUD weapon not flipped, 3-frame deaths, BG 480x270, portraits 160x160")
+	var weapons: PackedStringArray = _png_files(WEAPON_DIR)
+	_check(weapons.size() == 17, "17 weapon PNGs (got %d)" % weapons.size())
+	for f in weapons:
+		var t: Texture2D = load(f) as Texture2D
+		_check(t != null and t.get_width() == 320 and t.get_height() == 200,
+			"%s is 320x200 (got %s)" % [f.get_file(), str(t.get_size()) if t != null else "null"])
+	var hud: Control = (load("res://scenes/ui/hud.tscn") as PackedScene).instantiate() as Control
+	var ws: TextureRect = hud.get_node_or_null("%WeaponSprite") as TextureRect
+	_check(ws != null and not ws.flip_h, "HUD %WeaponSprite.flip_h == false")
+	hud.free()
+	for prefix in ENEMY_PREFIXES:
+		var sf: SpriteFrames = EnemyBase.get_sprite_frames(prefix)
+		var n: int = sf.get_frame_count("death") if sf != null and sf.has_animation("death") else 0
+		_check(n == 3, "%s death animation 3 frames (got %d)" % [prefix, n])
+	var bgs: PackedStringArray = PackedStringArray()
+	for f in _png_files(CUTSCENE_BG_DIR):
+		if f.get_file().begins_with("bg_"):
+			bgs.append(f)
+	_check(bgs.size() >= 4, "cutscene backgrounds present (got %d)" % bgs.size())
+	for f in bgs:
+		var t: Texture2D = load(f) as Texture2D
+		_check(t != null and t.get_width() == 480 and t.get_height() == 270,
+			"%s is 480x270 (got %s)" % [f.get_file(), str(t.get_size()) if t != null else "null"])
+	var portraits: int = 0
+	for f in _png_files(PORTRAIT_DIR):
+		var t: Texture2D = load(f) as Texture2D
+		if f.get_file() == "beta_device_closeup.png":
+			# Full-frame cutscene insert, not a radio portrait.
+			_check(t != null and t.get_width() == 480 and t.get_height() == 270, "beta_device_closeup is 480x270")
+			continue
+		portraits += 1
+		_check(t != null and t.get_width() == 160 and t.get_height() == 160,
+			"%s is 160x160 (got %s)" % [f.get_file(), str(t.get_size()) if t != null else "null"])
+	_check(portraits >= 4, "radio portraits present (got %d)" % portraits)
+	_end()
+
+
+# ------------------------------------------------------------------ 26. zero-overlap UI audit
+
+func _overlap_allowed(c: Control) -> bool:
+	var path: String = str(c.get_path())
+	for a in OVERLAP_ALLOW:
+		if path.ends_with(a):
+			return true
+	return false
+
+
+## Sibling Controls must not partially overlap (containment = layering, which is fine).
+func _audit_overlaps(node: Node, label: String, issues: PackedStringArray) -> void:
+	var kids: Array[Control] = []
+	for c in node.get_children():
+		var ctl: Control = c as Control
+		if ctl != null and ctl.is_visible_in_tree() and not _overlap_allowed(ctl):
+			kids.append(ctl)
+	for i in kids.size():
+		var a: Rect2 = kids[i].get_global_rect()
+		if a.size.x < 1.0 or a.size.y < 1.0:
+			continue
+		for j in range(i + 1, kids.size()):
+			var b: Rect2 = kids[j].get_global_rect()
+			if b.size.x < 1.0 or b.size.y < 1.0:
+				continue
+			var inter: Rect2 = a.intersection(b)
+			if inter.size.x <= 1.0 or inter.size.y <= 1.0:
+				continue
+			if a.grow(1.0).encloses(b) or b.grow(1.0).encloses(a):
+				continue
+			issues.append("%s: %s x %s" % [label, kids[i].name, kids[j].name])
+	for c in node.get_children():
+		var ci: CanvasItem = c as CanvasItem
+		if ci == null or ci.visible:
+			_audit_overlaps(c, label, issues)
+
+
+func _rects_clear(scene: Node, names: Array[String], label: String) -> void:
+	var rects: Array[Rect2] = []
+	for n in names:
+		var c: Control = scene.get_node_or_null("%" + n) as Control
+		_check(c != null, "%s %%%s present" % [label, n])
+		rects.append(c.get_global_rect() if c != null else Rect2())
+	for i in rects.size():
+		for j in range(i + 1, rects.size()):
+			if rects[i].has_area() and rects[j].has_area():
+				_check(not rects[i].intersects(rects[j]), "%s %%%s vs %%%s do not intersect (%s / %s)" % [label, names[i], names[j], str(rects[i]), str(rects[j])])
+
+
+func _mount_ui(vp: SubViewport, path: String) -> Node:
+	var ps: PackedScene = load(path) as PackedScene
+	if ps == null:
+		return null
+	var inst: Node = ps.instantiate()
+	vp.add_child(inst)
+	var ctl: Control = inst as Control
+	if ctl != null:
+		ctl.show()
+	await _frames(3)
+	return inst
+
+
+func _t26_ui_overlap() -> void:
+	_begin("26 Zero-overlap UI audit at 1280x720 (menus, settings tabs, HUD, cutscenes, 4 puzzles)")
+	var vp: SubViewport = SubViewport.new()
+	vp.name = "OverlapAudit"
+	vp.size = Vector2i(1280, 720)
+	vp.disable_3d = true
+	vp.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	root.add_child(vp)
+	var issues: PackedStringArray = PackedStringArray()
+	var simple: Array[String] = [
+		"res://scenes/ui/pause_menu.tscn", "res://scenes/ui/credits_panel.tscn", "res://scenes/ui/death_screen.tscn",
+		"res://scenes/ui/hud.tscn", CUTSCENE, ENDING, PUZZLE, CIRCUIT_PUZZLE, BIO_PUZZLE, SEQUENCE_PUZZLE,
+	]
+	var audited: int = 0
+
+	# Main menu, then the settings panel opened from it (card must hide).
+	var menu: Node = await _mount_ui(vp, MAIN_MENU)
+	if menu != null:
+		_audit_overlaps(menu, "MainMenu", issues)
+		audited += 1
+		var card: Control = menu.get_node_or_null("%MenuCard") as Control
+		var btn: Button = menu.get_node_or_null("%Settings") as Button
+		if btn != null:
+			btn.pressed.emit()
+		await _frames(2)
+		_check(card != null and not card.visible, "MainMenu %MenuCard hidden while SettingsPanel open")
+		_audit_overlaps(menu, "MainMenu+Settings", issues)
+		menu.free()
+	await _frames(1)
+
+	var panel: Node = await _mount_ui(vp, "res://scenes/ui/settings_panel.tscn")
+	if panel != null:
+		var tabs: TabContainer = panel.get_node_or_null("%Tabs") as TabContainer
+		var tab_n: int = tabs.get_tab_count() if tabs != null else 0
+		for t in tab_n:
+			tabs.current_tab = t
+			await _frames(2)
+			_audit_overlaps(panel, "SettingsPanel[tab %d]" % t, issues)
+			audited += 1
+		_check(tab_n == 4, "SettingsPanel audited on 4 tabs (got %d)" % tab_n)
+		panel.free()
+	await _frames(1)
+
+	for path in simple:
+		var inst: Node = await _mount_ui(vp, path)
+		_check(inst != null, "%s mounts" % path.get_file())
+		if inst == null:
+			continue
+		_audit_overlaps(inst, path.get_file().get_basename(), issues)
+		audited += 1
+		if path == SEQUENCE_PUZZLE:
+			_rects_clear(inst, ["Pattern", "Replay"] as Array[String], "sequence_puzzle")
+		elif path == CUTSCENE or path == ENDING:
+			_rects_clear(inst, ["Portrait", "Radio", "Advance", "Skip"] as Array[String], path.get_file().get_basename())
+		inst.free()
+		await _frames(1)
+	print("       overlap audit: %d layouts, %d issues" % [audited, issues.size()])
+	_check(audited == 15, "15 layouts audited (got %d)" % audited)
+	_check(issues.is_empty(), "overlaps: %s" % "; ".join(issues))
+	vp.free()
+	await _frames(2)
+	_end()
+
+
+# ------------------------------------------------------------------ 27. render performance
+
+func _t27_render_performance() -> void:
+	_begin("27 Render/perf: CRT nearest filter, quality 0/1/2 glow off/off/on, OmniLight3D distance fade on Floors 1-5")
+	var shader_text: String = FileAccess.get_file_as_string(CRT_SHADER)
+	_check(shader_text.length() > 0, "crt_vhs.gdshader readable")
+	_check(not shader_text.contains("filter_linear_mipmap"), "CRT shader has no filter_linear_mipmap")
+	_check(shader_text.contains("filter_nearest"), "CRT shader uses filter_nearest")
+	var quality_before: int = int(_settings().get("graphics_quality"))
+	var ok: bool = await _goto(FLOOR_1)
+	_check(ok, "floor_01 loaded")
+	if ok:
+		var envs: Array[Node] = current_scene.find_children("*", "WorldEnvironment", true, false)
+		_check(envs.size() > 0, "WorldEnvironment present")
+		if envs.size() > 0:
+			var env: Environment = (envs[0] as WorldEnvironment).environment
+			var got: Array[bool] = []
+			for q in [0, 1, 2]:
+				_settings().call("set_graphics_quality", q)
+				await _frames(1)
+				got.append(env.glow_enabled)
+			_check(str(got) == "[false, false, true]", "glow per quality 0/1/2 = false/false/true (got %s)" % str(got))
+		_settings().call("set_graphics_quality", quality_before)
+	for i in FLOORS.size():
+		var floor_ok: bool = await _goto(FLOORS[i])
+		_check(floor_ok, "floor %d loaded" % (i + 1))
+		if not floor_ok:
+			continue
+		_arm_player()
+		var lights: Array[Node] = current_scene.find_children("*", "OmniLight3D", true, false)
+		var unfaded: int = 0
+		for n in lights:
+			if not (n as OmniLight3D).distance_fade_enabled:
+				unfaded += 1
+		print("       floor %d: %d OmniLight3D, %d without distance fade" % [i + 1, lights.size(), unfaded])
+		_check(lights.size() > 0, "floor %d has OmniLight3D nodes" % (i + 1))
+		_check(unfaded == 0, "floor %d: every OmniLight3D distance_fade_enabled (%d missing)" % [i + 1, unfaded])
+	_end()
+
+
+# ------------------------------------------------------------------ 28. hint banner + radio
+
+func _t28_hint_and_radio() -> void:
+	_begin("28 Floor 1 hint banner above y=220; radio comms box (speaker, portrait, < 320 px, no HUD overlap)")
+	var ok: bool = await _goto(FLOOR_1)
+	_check(ok, "floor_01 loaded")
+	var pl: Node3D = _player()
+	if not ok or pl == null:
+		_end()
+		return
+	_arm_player()
+	await _frames(3)
+	var banner: Control = current_scene.get_node_or_null("ControlsHint/HintBanner") as Control
+	_check(banner != null, "ControlsHint/HintBanner present")
+	if banner != null:
+		var bottom: float = banner.position.y + banner.size.y
+		_check(bottom < 220.0, "HintBanner bottom %.1f < 220" % bottom)
+	var hud: Control = _ap(pl, "hud") as Control
+	_check(hud != null, "HUD attached")
+	if hud == null:
+		_end()
+		return
+	_gm().call("send_radio", "GENERAL DEMİR", "general_portrait", "Test telsiz mesajı — BETA hazır.", 3.0)
+	await _frames(4)
+	var box: Control = hud.get_node_or_null("%RadioBox") as Control
+	var speaker: Label = hud.get_node_or_null("%RadioSpeaker") as Label
+	var portrait: TextureRect = hud.get_node_or_null("%RadioPortrait") as TextureRect
+	var mission: Control = hud.get_node_or_null("%MissionPlate") as Control
+	var ammo: Control = hud.get_node_or_null("Margins/Bands/Bottom/AmmoPlate") as Control
+	_check(box != null and box.visible, "%RadioBox visible")
+	_check(speaker != null and speaker.text == "GENERAL DEMİR", "%%RadioSpeaker 'GENERAL DEMİR' (got '%s')" % (speaker.text if speaker != null else "null"))
+	_check(portrait != null and portrait.texture != null, "%RadioPortrait texture loaded")
+	if box != null:
+		var r: Rect2 = box.get_global_rect()
+		_check(box.size.y < 320.0, "%%RadioBox height %.1f < 320" % box.size.y)
+		if mission != null:
+			_check(not r.intersects(mission.get_global_rect()), "RadioBox vs MissionPlate clear (%s / %s)" % [str(r), str(mission.get_global_rect())])
+		_check(ammo != null, "bottom-right AmmoPlate present")
+		if ammo != null:
+			_check(not r.intersects(ammo.get_global_rect()), "RadioBox vs AmmoPlate clear (%s / %s)" % [str(r), str(ammo.get_global_rect())])
+	_end()

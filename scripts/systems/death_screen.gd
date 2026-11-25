@@ -18,6 +18,7 @@ func show_death() -> void:
 	show_death_screen()
 
 func _leave(restart: bool) -> void:
+	AudioManager.play_sfx("sfx_puzzle_move", -16.0)
 	remove_from_group("active_game_modal")
 	get_tree().paused = false
 	hide()

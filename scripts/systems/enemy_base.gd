@@ -53,6 +53,9 @@ var _last_seen_time: float = 0.0
 var _last_known_pos: Vector3 = Vector3.ZERO
 var _base_modulate: Color = Color.WHITE
 var _resume_after_hurt: int = State.CHASE
+var _burst_remaining: int = 0
+var _burst_timer: float = 0.0
+var _attack_recover: float = ATTACK_RECOVER
 
 @onready var sprite: AnimatedSprite3D = get_node_or_null("Sprite") as AnimatedSprite3D
 @onready var body_collider: CollisionShape3D = get_node_or_null("BodyCollider") as CollisionShape3D
@@ -71,6 +74,9 @@ func _ready() -> void:
 	_facing = -global_basis.z
 	if stats == null:
 		stats = EnemyStats.new()
+	# Per-instance copy BEFORE difficulty scaling so the shared .tres is never mutated.
+	stats = stats.duplicate() as EnemyStats
+	_apply_difficulty()
 	if health == null:
 		health = HealthComponent.new()
 		health.name = "HealthComponent"
@@ -88,6 +94,15 @@ func _ready() -> void:
 	_set_state(State.PATROL if not patrol_points.is_empty() else State.IDLE)
 	if start_alerted:
 		call_deferred("alert")
+
+
+func _apply_difficulty() -> void:
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm == null or not sm.has_method("get_enemy_hp_mult"):
+		return
+	stats.max_health *= float(sm.call("get_enemy_hp_mult"))
+	stats.damage *= float(sm.call("get_enemy_damage_mult"))
+	stats.move_speed *= float(sm.call("get_enemy_speed_mult"))
 
 
 # ------------------------------------------------------------------ public API
@@ -125,8 +140,9 @@ func take_damage(amount: float, _source: Node = null) -> bool:
 	_sfx("sfx_enemy_hurt", -4.0, randf_range(0.9, 1.1))
 	if state == State.IDLE or state == State.PATROL:
 		alert()
-	elif _stagger_cooldown <= 0.0 and state != State.HURT:
-		# Interrupts windup — reward for aggressive play.
+	elif _stagger_cooldown <= 0.0 and state != State.HURT and randf() >= stats.stagger_resistance:
+		# Interrupts windup — reward for aggressive play (heavies resist via stagger_resistance).
+		_burst_remaining = 0
 		_resume_after_hurt = State.CHASE
 		_stagger_cooldown = HURT_STAGGER_COOLDOWN
 		_set_state(State.HURT)
@@ -182,7 +198,8 @@ func _physics_process(delta: float) -> void:
 		State.ATTACK_WINDUP:
 			_tick_windup()
 		State.ATTACK:
-			if _state_time >= ATTACK_RECOVER:
+			_tick_burst(delta)
+			if _state_time >= _attack_recover and _burst_remaining <= 0:
 				_set_state(State.CHASE)
 		State.HURT:
 			if _state_time >= HURT_DURATION:
@@ -277,8 +294,30 @@ func _tick_windup() -> void:
 func _fire_attack() -> void:
 	_set_state(State.ATTACK)
 	_attack_cooldown = stats.attack_interval
+	var shots: int = maxi(stats.burst_count, 1)
+	_burst_remaining = shots - 1
+	_burst_timer = stats.burst_interval
+	_attack_recover = maxf(ATTACK_RECOVER, stats.burst_interval * float(shots - 1) + 0.08)
+	_fire_shot()
+
+
+func _tick_burst(delta: float) -> void:
+	if _burst_remaining <= 0:
+		return
+	_burst_timer -= delta
+	if _burst_timer <= 0.0:
+		_burst_remaining -= 1
+		_burst_timer = stats.burst_interval
+		# Follow-up rounds re-aim slightly toward the player (still dodgeable by strafing).
+		if player != null:
+			var fresh: Vector3 = player.global_position + Vector3(0.0, TARGET_HEIGHT, 0.0)
+			_aim_point = _aim_point.lerp(fresh, 0.35)
+		_fire_shot()
+
+
+func _fire_shot() -> void:
 	_sfx("sfx_enemy_attack", -2.0, randf_range(0.95, 1.05))
-	if player == null:
+	if player == null or not is_inside_tree():
 		return
 	var origin: Vector3 = global_position + Vector3(0.0, EYE_HEIGHT, 0.0)
 	var dir: Vector3 = (_aim_point - origin).normalized()
@@ -290,13 +329,14 @@ func _fire_attack() -> void:
 		return
 	var collider: Object = hit.get("collider") as Object
 	if collider is Node and (collider as Node).is_in_group("player") and collider.has_method("apply_damage"):
-		collider.call("apply_damage", stats.damage)
+		collider.call("apply_damage", stats.damage, global_position)
 
 
 # ------------------------------------------------------------------ death
 
 func _die() -> void:
 	is_dead = true
+	_burst_remaining = 0
 	_set_state(State.DEAD)
 	velocity = Vector3.ZERO
 	collision_layer = 0
@@ -325,8 +365,7 @@ func _die() -> void:
 
 
 func _on_death_anim_finished() -> void:
-	if not is_harvested:
-		_play_anim("corpse_fresh")
+	_play_anim("corpse_drained" if is_harvested else "corpse_fresh")
 
 
 func _setup_corpse_area(enabled: bool) -> void:

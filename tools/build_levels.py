@@ -10,6 +10,12 @@ import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WALL_T = 0.5
+TRIM_H = 0.14  # baseboard height
+TRIM_D = 0.05  # baseboard depth off the wall face
+RIB_STEP = 4.0  # ceiling rib spacing
+RIB_H = 0.22
+RIB_W = 0.2
+PLINTH_PAD = 0.12
 
 
 def f(v: float) -> str:
@@ -135,11 +141,13 @@ class SceneBuilder:
         for i, (a, b, lintel) in enumerate(cuts):
             if a > cur:
                 self.solid(name, cur, a, 0, h, z - t, z + t, mat)
+                self.trim_x(name, z, cur, a)
             if lintel < h:
                 self.solid(name + "Lintel", a, b, lintel, h, z - t, z + t, mat)
             cur = b
         if x1 + t > cur:
             self.solid(name, cur, x1 + t, 0, h, z - t, z + t, mat)
+            self.trim_x(name, z, cur, x1 + t)
 
     def wall_z(self, name: str, x: float, z0: float, z1: float, h: float, mat: str,
                gaps: list[tuple[float, float, float]] | None = None) -> None:
@@ -150,17 +158,71 @@ class SceneBuilder:
         for a, b, lintel in cuts:
             if a > cur:
                 self.solid(name, x - t, x + t, 0, h, cur, a, mat)
+                self.trim_z(name, x, cur, a)
             if lintel < h:
                 self.solid(name + "Lintel", x - t, x + t, lintel, h, a, b, mat)
             cur = b
         if z1 + t > cur:
             self.solid(name, x - t, x + t, 0, h, cur, z1 + t, mat)
+            self.trim_z(name, x, cur, z1 + t)
 
     def room_slabs(self, name: str, x0: float, x1: float, z0: float, z1: float, h: float,
                    floor_mat: str, ceil_mat: str) -> None:
         self.solid(name + "Floor", x0, x1, -0.5, 0, z0, z1, floor_mat)
         t = WALL_T / 2
         self.solid(name + "Ceiling", x0 - t, x1 + t, h, h + 0.3, z0 - t, z1 + t, ceil_mat)
+        self.ceiling_ribs(name, x0, x1, z0, z1, h)
+
+    # ------------------------------------------------- visual-only detail (no collision)
+    def trim_material(self) -> str:
+        return self.sub_res("mat:_trim", "StandardMaterial3D", [
+            "albedo_color = %s" % col((0.16, 0.18, 0.21, 1)),
+            "metallic = 0.55",
+            "roughness = 0.5",
+        ])
+
+    def trim_x(self, name: str, z: float, a: float, b: float) -> None:
+        """Baseboard trim on both faces of an X-running wall segment (use_collision = false)."""
+        if b - a < 0.5:
+            return
+        t = WALL_T / 2
+        m = self.trim_material()
+        self.solid(name + "Trim", a, b, 0, TRIM_H, z - t - TRIM_D, z - t, m, collide=False)
+        self.solid(name + "Trim", a, b, 0, TRIM_H, z + t, z + t + TRIM_D, m, collide=False)
+
+    def trim_z(self, name: str, x: float, a: float, b: float) -> None:
+        """Baseboard trim on both faces of a Z-running wall segment (use_collision = false)."""
+        if b - a < 0.5:
+            return
+        t = WALL_T / 2
+        m = self.trim_material()
+        self.solid(name + "Trim", x - t - TRIM_D, x - t, 0, TRIM_H, a, b, m, collide=False)
+        self.solid(name + "Trim", x + t, x + t + TRIM_D, 0, TRIM_H, a, b, m, collide=False)
+
+    def ceiling_ribs(self, name: str, x0: float, x1: float, z0: float, z1: float, h: float) -> None:
+        """Structural ribs under the ceiling, spanning the short axis every RIB_STEP m (no collision)."""
+        m = self.trim_material()
+        w, d = x1 - x0, z1 - z0
+        if min(w, d) < 3.0:
+            return
+        if d >= w:
+            n = int(d // RIB_STEP)
+            for i in range(1, n + 1):
+                z = z0 + d * i / (n + 1)
+                self.solid(name + "Rib", x0, x1, h - RIB_H, h, z - RIB_W / 2, z + RIB_W / 2, m, collide=False)
+        else:
+            n = int(w // RIB_STEP)
+            for i in range(1, n + 1):
+                x = x0 + w * i / (n + 1)
+                self.solid(name + "Rib", x - RIB_W / 2, x + RIB_W / 2, h - RIB_H, h, z0, z1, m, collide=False)
+
+    def column(self, name: str, x0: float, x1: float, z0: float, z1: float, h: float, mat: str) -> None:
+        """Solid column with a visual-only plinth and capital."""
+        self.solid(name, x0, x1, 0, h, z0, z1, mat)
+        m = self.trim_material()
+        p = PLINTH_PAD
+        self.solid(name + "Plinth", x0 - p, x1 + p, 0, 0.35, z0 - p, z1 + p, m, collide=False)
+        self.solid(name + "Capital", x0 - p, x1 + p, h - 0.3, h, z0 - p, z1 + p, m, collide=False)
 
     def light(self, name: str, pos, rgba, energy: float = 1.6, rng: float = 11.0) -> None:
         self.node(self.unique(name), "OmniLight3D", "Lights", [
@@ -170,6 +232,9 @@ class SceneBuilder:
             "omni_range = %s" % f(rng),
             "omni_attenuation = 1.2",
             "shadow_enabled = false",
+            "distance_fade_enabled = true",
+            "distance_fade_begin = 16.0",
+            "distance_fade_length = 8.0",
         ])
 
     def instance(self, name: str, scene: str, parent: str, props: list[str]) -> None:
@@ -276,7 +341,7 @@ def build_floor_01() -> None:
     b.wall_z("LobbyEastWall", 14, -36, -12, 7, wall_m, [(-28, -22, 4)])
     for cx in (-8, 8):
         for cz in (-18, -30):
-            b.solid("Column", cx - 0.6, cx + 0.6, 0, 7, cz - 0.6, cz + 0.6, wall_m)
+            b.column("Column", cx - 0.6, cx + 0.6, cz - 0.6, cz + 0.6, 7, wall_m)
     b.solid("ReceptionDesk", -4, 4, 0, 1.1, -27, -26, desk_m)
     b.solid("ReceptionWing", -4.6, -4, 0, 1.1, -29, -26, desk_m)
     b.solid("ReceptionWing", 4, 4.6, 0, 1.1, -29, -26, desk_m)
@@ -313,7 +378,7 @@ def build_floor_01() -> None:
     b.wall_z("HallEastWall", 36, -66, -50, 6, wall_m)
     b.wall_x("HallNorthWall", -66, 16, 36, 6, wall_m, [(24, 28, 3.2)])
     for cx in (20, 32):
-        b.solid("HallPillar", cx - 0.7, cx + 0.7, 0, 6, -59, -57.6, wall_m)
+        b.column("HallPillar", cx - 0.7, cx + 0.7, -59, -57.6, 6, wall_m)
     b.solid("HallBarricade", 22, 24.5, 0, 1.15, -55, -54.3, door_m)
     b.solid("HallBarricade", 28, 30.5, 0, 1.15, -61.2, -60.5, door_m)
     b.solid("HallStrip", 18, 34, 5.92, 6, -58.2, -57.8, glow_m, collide=False)

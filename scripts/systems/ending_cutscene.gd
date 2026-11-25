@@ -33,12 +33,12 @@ func _show_shot() -> void:
 		%Background.position = Vector2(-12, -10)
 		pan = create_tween()
 		pan.tween_property(%Background, "position", Vector2(-52, -18), 8.0 if village else 20.0)
-	%Rain.visible = false
+	%Rain.visible = not village
 	%Radio.visible = shot_index == 1
 	%Location.text = line[0]
 	%Speaker.text = line[1]
-	%Dialogue.text = line[2]
-	%Portrait.texture = _art(line[3])
+	_begin_dialogue(str(line[2]))
+	%Portrait.texture = _art(str(line[3]))
 	remaining = maxf(4.0, 1.6 + float(str(line[2]).length()) / 15.0)
 
 func advance_line() -> void:

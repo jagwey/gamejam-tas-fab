@@ -4,6 +4,7 @@ extends Node
 signal floor_changed(floor_num: int, floor_title: String)
 signal objective_changed(objective_text: String)
 signal boss_bar_updated(boss_name: String, hp: float, max_hp: float, show_bar: bool)
+signal radio_transmission(speaker: String, portrait_stem: String, text: String, duration: float)
 
 const MAIN_MENU_SCENE: String = "res://scenes/ui/main_menu.tscn"
 const OPENING_CUTSCENE: String = "res://scenes/cutscenes/opening_cutscene.tscn"
@@ -137,12 +138,30 @@ func _attach_crt_overlay() -> void:
 
 
 func _on_settings_changed() -> void:
+	_apply_scene_quality()
 	if crt_layer == null:
 		return
 	var settings: Node = get_node_or_null("/root/SettingsManager")
 	if settings == null:
 		return
 	crt_layer.visible = bool(settings.get("crt_enabled"))
+
+
+## Applies SettingsManager graphics quality to every WorldEnvironment in the current scene.
+func _apply_scene_quality() -> void:
+	if not is_inside_tree():
+		return
+	var settings: Node = get_node_or_null("/root/SettingsManager")
+	var scene: Node = get_tree().current_scene
+	if settings == null or scene == null or not settings.has_method("apply_environment_quality"):
+		return
+	var envs: Array[Node] = scene.find_children("*", "WorldEnvironment", true, false)
+	if scene is WorldEnvironment:
+		envs.append(scene)
+	for n in envs:
+		var we: WorldEnvironment = n as WorldEnvironment
+		if we != null and we.environment != null:
+			settings.call("apply_environment_quality", we.environment)
 
 
 # ---------------------------------------------------------------- floor flow
@@ -251,6 +270,7 @@ func _change_scene(path: String) -> void:
 
 
 func _on_scene_changed() -> void:
+	_apply_scene_quality()
 	# A floor scene opened directly (editor F6 / CLI) keeps the floor number in sync.
 	var scene: Node = get_tree().current_scene
 	if scene != null and not _pending_announce:
@@ -271,6 +291,10 @@ func _on_scene_changed() -> void:
 func set_objective(text: String) -> void:
 	current_objective = text
 	objective_changed.emit(text)
+
+
+func send_radio(speaker: String, portrait_stem: String, text: String, duration: float = 5.5) -> void:
+	radio_transmission.emit(speaker, portrait_stem, text, duration)
 
 
 func update_boss_bar(boss_name: String, hp: float, max_hp: float, show_bar: bool) -> void:

@@ -5,6 +5,9 @@ signal boss_defeated
 
 const SLAM_RADIUS := 4.5
 const PLASMA := Color("#4caeff")
+const DEFAULT_MAX_HEALTH := 800.0
+const TRACER_POOL_SIZE := 8
+const TRACER_LIFETIME := 0.07
 var phase := 1
 var _slam := false
 var _shots_left := 0
@@ -15,12 +18,27 @@ var _dash_cooldown := 2.0
 var _dash_left := 0.0
 var _dash_side := 1.0
 var _beam_material := StandardMaterial3D.new()
+var _base_move_speed := 3.2
+var _base_attack_interval := 2.1
+var _base_windup := 0.8
+var _tracers: Array[MeshInstance3D] = []
+var _tracer_ttl: PackedFloat32Array = PackedFloat32Array()
+var _tracer_next := 0
 
 func _ready() -> void:
 	# Per-instance copy: phase 2/3 tweaks must not mutate the shared .tres.
-	if stats != null:
-		stats = stats.duplicate() as EnemyStats
+	if stats == null:
+		stats = EnemyStats.new()
+		stats.level = 5
+		stats.display_name = "Viktor Volkov"
+		stats.sprite_prefix = "volkov_boss"
+	stats = stats.duplicate() as EnemyStats
+	stats.max_health = maxf(stats.max_health, DEFAULT_MAX_HEALTH)
 	super()
+	# Captured after difficulty scaling (EnemyBase._ready) so phase boosts stack on top of it.
+	_base_move_speed = stats.move_speed
+	_base_attack_interval = stats.attack_interval
+	_base_windup = stats.windup_duration
 	var idle := sprite.sprite_frames.get_frame_texture("idle", 0)
 	sprite.pixel_size = 2.6 / float(idle.get_height())
 	sprite.position.y = 1.3
@@ -37,9 +55,9 @@ func _on_damaged(_amount: float, current: float, maximum: float) -> void:
 	while phase < next_phase:
 		phase += 1
 		_shots_left = 0
-		stats.move_speed = 5.2
-		stats.attack_interval = 1.35 if phase == 2 else 1.0
-		stats.windup_duration = 0.62 if phase == 2 else 0.48
+		stats.move_speed = _base_move_speed * (1.45 if phase == 2 else 1.75)
+		stats.attack_interval = minf(_base_attack_interval * (0.62 if phase == 2 else 0.45), 1.35 if phase == 2 else 0.95)
+		stats.windup_duration = minf(_base_windup * (0.75 if phase == 2 else 0.58), 0.6 if phase == 2 else 0.46)
 		if phase == 3:
 			_base_modulate = Color("#9ddfff")
 			bio_light.light_color = PLASMA
@@ -82,6 +100,7 @@ func _physics_process(delta: float) -> void:
 		_shot_timer -= delta
 		if _shot_timer <= 0.0:
 			_fire_round()
+	_tick_tracers(delta)
 	super(delta)
 
 func _fire_attack() -> void:
@@ -97,7 +116,7 @@ func _fire_attack() -> void:
 		wave.tween_property($ShockRadius, "scale", Vector3.ONE, 0.18)
 		if global_position.distance_to(player.global_position) <= SLAM_RADIUS and has_line_of_sight():
 			if player.has_method("apply_damage"):
-				player.call("apply_damage", 24.0 if phase == 3 else 18.0)
+				player.call("apply_damage", (24.0 if phase == 3 else 18.0) * _damage_mult(), global_position)
 		return
 	_burst_phase = phase
 	_burst_size = [3, 4, 6][phase - 1]
@@ -120,27 +139,56 @@ func _fire_round() -> void:
 		endpoint = hit.position
 		var target := hit.collider as Node
 		if target and target.is_in_group("player") and target.has_method("apply_damage"):
-			target.call("apply_damage", stats.damage)
+			target.call("apply_damage", stats.damage, global_position)
 	_draw_tracer(origin, endpoint)
+
+func _damage_mult() -> float:
+	var sm: Node = get_node_or_null("/root/SettingsManager")
+	if sm != null and sm.has_method("get_enemy_damage_mult"):
+		return float(sm.call("get_enemy_damage_mult"))
+	return 1.0
+
+## Reuses a ring of TRACER_POOL_SIZE beams instead of allocating/freeing one per shot.
+func _acquire_tracer() -> MeshInstance3D:
+	if _tracers.size() < TRACER_POOL_SIZE:
+		var t := MeshInstance3D.new()
+		var beam := BoxMesh.new()
+		beam.size = Vector3(0.035, 0.035, 1.0)
+		t.mesh = beam
+		t.material_override = _beam_material
+		t.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		t.top_level = true
+		t.visible = false
+		add_child(t)
+		_tracers.append(t)
+		_tracer_ttl.append(0.0)
+		return t
+	var reused := _tracers[_tracer_next]
+	_tracer_next = (_tracer_next + 1) % TRACER_POOL_SIZE
+	return reused
+
+func _tick_tracers(delta: float) -> void:
+	for i in range(_tracers.size()):
+		if _tracer_ttl[i] <= 0.0:
+			continue
+		_tracer_ttl[i] -= delta
+		if _tracer_ttl[i] <= 0.0 and is_instance_valid(_tracers[i]):
+			_tracers[i].visible = false
 
 func _draw_tracer(origin: Vector3, endpoint: Vector3) -> void:
 	var length := origin.distance_to(endpoint)
 	if length < 0.01:
 		return
-	var tracer := MeshInstance3D.new()
-	var beam := BoxMesh.new()
-	beam.size = Vector3(0.035, 0.035, length)
-	tracer.mesh = beam
-	tracer.material_override = _beam_material
-	tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	tracer.top_level = true
-	add_child(tracer)
+	var tracer := _acquire_tracer()
+	(tracer.mesh as BoxMesh).size = Vector3(0.035, 0.035, length)
 	var up := Vector3.RIGHT if absf(origin.direction_to(endpoint).dot(Vector3.UP)) > 0.98 else Vector3.UP
 	tracer.look_at_from_position(origin.lerp(endpoint, 0.5), endpoint, up)
-	var fade := tracer.create_tween()
-	fade.tween_interval(0.07)
-	fade.tween_callback(tracer.queue_free)
+	tracer.visible = true
+	_tracer_ttl[_tracers.find(tracer)] = TRACER_LIFETIME
 
 func _die() -> void:
+	for t in _tracers:
+		if is_instance_valid(t):
+			t.visible = false
 	super()
 	boss_defeated.emit()

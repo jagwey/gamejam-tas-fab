@@ -81,6 +81,36 @@ bg_color = Color(0.97, 0.22, 0.31, 1)
 content_margin_top = 2.0
 content_margin_bottom = 2.0
 
+[sub_resource type="Gradient" id="on_gradient"]
+offsets = PackedFloat32Array(0, 0.48, 0.52, 1)
+colors = PackedColorArray(0.12, 0.21, 0.24, 1, 0.12, 0.21, 0.24, 1, 0.329, 0.929, 0.890, 1, 0.329, 0.929, 0.890, 1)
+
+[sub_resource type="GradientTexture2D" id="on"]
+gradient = SubResource("on_gradient")
+width = 34
+height = 14
+fill_to = Vector2(1, 0)
+
+[sub_resource type="Gradient" id="off_gradient"]
+offsets = PackedFloat32Array(0, 0.48, 0.52, 1)
+colors = PackedColorArray(0.64, 0.76, 0.78, 1, 0.64, 0.76, 0.78, 1, 0.12, 0.21, 0.24, 1, 0.12, 0.21, 0.24, 1)
+
+[sub_resource type="GradientTexture2D" id="off"]
+gradient = SubResource("off_gradient")
+width = 34
+height = 14
+fill_to = Vector2(1, 0)
+
+[sub_resource type="Gradient" id="thumb_gradient"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0.329, 0.929, 0.890, 1, 0.329, 0.929, 0.890, 1)
+
+[sub_resource type="GradientTexture2D" id="thumb"]
+gradient = SubResource("thumb_gradient")
+width = 10
+height = 18
+fill_to = Vector2(1, 0)
+
 [resource]
 default_font = SubResource("type")
 default_font_size = 19
@@ -95,3 +125,39 @@ Button/styles/hover = SubResource("hover")
 Button/styles/pressed = SubResource("active")
 Button/styles/focus = SubResource("focus")
 Button/styles/disabled = SubResource("disabled")
+OptionButton/styles/normal = SubResource("button")
+OptionButton/styles/hover = SubResource("hover")
+OptionButton/styles/pressed = SubResource("active")
+OptionButton/styles/hover_pressed = SubResource("hover")
+OptionButton/styles/focus = SubResource("focus")
+OptionButton/styles/disabled = SubResource("disabled")
+CheckButton/styles/normal = SubResource("button")
+CheckButton/styles/hover = SubResource("hover")
+CheckButton/styles/pressed = SubResource("active")
+CheckButton/styles/hover_pressed = SubResource("hover")
+CheckButton/styles/focus = SubResource("focus")
+CheckButton/styles/disabled = SubResource("disabled")
+PanelContainer/styles/panel = SubResource("panel")
+PopupMenu/styles/panel = SubResource("panel")
+PopupMenu/styles/hover = SubResource("hover")
+HSlider/styles/slider = SubResource("track")
+TabContainer/styles/panel = SubResource("panel")
+TabContainer/styles/tab_selected = SubResource("active")
+TabContainer/styles/tab_hovered = SubResource("hover")
+TabContainer/styles/tab_unselected = SubResource("button")
+TabContainer/styles/tab_disabled = SubResource("disabled")
+TabContainer/styles/tab_focus = SubResource("focus")
+TabBar/styles/tab_selected = SubResource("active")
+TabBar/styles/tab_hovered = SubResource("hover")
+TabBar/styles/tab_unselected = SubResource("button")
+TabBar/styles/tab_focus = SubResource("focus")
+CheckButton/icons/checked = SubResource("on")
+CheckButton/icons/unchecked = SubResource("off")
+CheckButton/icons/checked_disabled = SubResource("on")
+CheckButton/icons/unchecked_disabled = SubResource("off")
+HSlider/icons/grabber = SubResource("thumb")
+HSlider/icons/grabber_highlight = SubResource("thumb")
+HSlider/icons/grabber_disabled = SubResource("thumb")
+TabContainer/constants/side_margin = 0
+TabContainer/colors/font_selected_color = Color(0.329, 0.929, 0.890, 1)
+PopupMenu/constants/v_separation = 10

@@ -1,6 +1,6 @@
 # BETA PROTOCOL
 
-Tasarım Fabrikası Game Jam için Godot 4.7 ile yapılmış, retro-pixel dokulu bir birinci şahıs nişancı. Bu repo oyunun **tam sürümünü (v0.2.0)** içeriyor: 5 kat, 4 bulmaca, 3 aşamalı Viktor Volkov boss savaşı ve final sinematiği.
+Tasarım Fabrikası Game Jam için Godot 4.7 ile yapılmış, retro-pixel dokulu bir birinci şahıs nişancı. Bu repo oyunun **v0.3.0** sürümünü içeriyor: 5 kat, 4 bulmaca, 3 aşamalı Viktor Volkov boss savaşı, final sinematiği, 5 kademeli BETA evrimi, iki zorluk seviyesi, telsiz iletişimi ve 4 sekmeli ayar menüsü.
 
 ## Hikâye
 
@@ -20,13 +20,14 @@ BETA Cihazı yaşam enerjisini **yeni düşmüş düşmanlardan** çeker. Kendil
 6. **Kat 5 — Çatı ve Beta Reaktörü.** Yağmur altında, exo-zırhlı **Viktor Volkov** ile 3 aşamalı final savaşı. Volkov düşünce reaktör konsolu açılır ve savunma kulesi kapatılır.
 7. **Final sinematiği.** Tahliye helikopterleri çatıya iner. Haftalar sonra Aydın köyündeki sakin hayatına döner. Özet kartıyla oyun biter.
 
-## Oyun kapsamı (v0.2.0)
+## Oyun kapsamı (v0.3.0)
 
 | Bölüm | İçerik |
 |---|---|
 | Ana menü | Yeni Oyun, Devam Et (kayıt varsa), Ayarlar, Geliştirici Ekibi, Çıkış |
 | Açılış sahnesi | Köy evi, Aydın ve General diyaloğu. Basılı tutarak atlanabilir (5 sn). |
-| Sistemler | Tabanca, pompalı tüfek, bıçak; düşman yapay zekâsı (IDLE → PATROL → ALERT → CHASE → ATTACK); BETA ile can toplama; ölüm ekranı; duraklatma menüsü; kat başına kayıt ve can/silah aktarımı; boss can barı; CRT/VHS ekran filtresi |
+| Sistemler | Tabanca, pompalı tüfek, bıçak; düşman yapay zekâsı (IDLE → PATROL → ALERT → CHASE → ATTACK), seri atış ve sendeleme direnci; BETA emilimi ve 5 kademeli evrim; Overdrive; ölüm ekranı; duraklatma menüsü; kat başına kayıt ve can/maks can/öz/kademe aktarımı; boss can barı; telsiz iletişimi; CRT/VHS ekran filtresi |
+| Ayarlar | 4 sekme: Oynanış, Görüntü & Performans, Ses, Kontroller (ayrıntı aşağıda) |
 
 ### 5 kat ve 4 bulmaca
 
@@ -40,26 +41,83 @@ BETA Cihazı yaşam enerjisini **yeni düşmüş düşmanlardan** çeker. Kendil
 
 ### Düşman seviyeleri
 
-| Seviye | Düşman | Can | Hasar | Saldırı aralığı | BETA iyileşmesi |
-|---|---|---|---|---|---|
-| 1 | Güvenlik Görevlisi / Silahlı Teknisyen | 40 | 5 | 0.9 sn | +5 |
-| 2 | Paralı Asker | 65 | 8 | 1.2 sn | +10 |
-| 3 | Ağır Paralı Asker | 100 | 12 | 1.5 sn | +15 |
-| 4 | Elit Komando | 140 | 17 | 1.9 sn | +20 |
-| 5 | Exo Asker (`enemy_lv5_exo`, yedek boss verisi) | 200 | 23 | 2.3 sn | +25 |
-| Boss | **Viktor Volkov** (exo-zırh, Lv5) | 450 | 7 / mermi (seri atış), 18–24 şok dalgası | 2.1 → 1.35 → 1.0 sn | +25 |
+Değerler **Normal** zorluktadır. Saldırı aralığı, iki atış/seri arasındaki süredir.
+
+| Seviye | Düşman | Can | Hasar | Saldırı aralığı | Seri | Sendeleme direnci |
+|---|---|---|---|---|---|---|
+| 1 | Güvenlik Görevlisi | 40 | 6 | 0.90 sn | 1 | – |
+| 1 | Silahlı Teknisyen | 48 | 7 | 0.90 sn | 1 | – |
+| 2 | Paralı Asker | 85 | 9 | 1.15 sn | 2 | – |
+| 3 | Ağır Paralı Asker | 155 | 16 | 1.40 sn | 2 | 0.65 |
+| 4 | Elit Komando | 220 | 19 | 1.55 sn | 3 | 0.45 |
+| 5 | Exo Asker (`enemy_lv5_exo`, yedek boss verisi) | 800 | 22 | 1.65 sn | 3 | – |
+| Boss | **Viktor Volkov** (exo-zırh, Lv5) | **800** | mermi başına seri atış + şok dalgası | aşamalarla hızlanır | – | – |
 
 **Volkov'un 3 aşaması:**
 - **Aşama 1 (%100–66):** 3 mermilik seri atış. Yakına gelince yere vurup şok dalgası yayar (4.5 m).
 - **Aşama 2 (≤ %65):** hızlanır, yana atılarak kaçar, 4 mermilik yelpaze atış yapar. 2 takviye düşman gelir.
 - **Aşama 3 (≤ %30):** mavi plazma moduna geçer, 6 mermilik hızlı seri atış yapar, şok dalgası 24 hasar verir. 2 takviye daha gelir.
-- Ölünce cesedi BETA ile **+25 HP** verir ve reaktör konsolu açılır.
+- Ölünce cesedi BETA ile Lv5 emilimi verir (+20 maks can, M × %30 + 20 iyileşme, 100 öz) ve reaktör konsolu açılır.
 
-### BETA Cihazı kuralları
-- Taze bir cesedin yanında **F** tuşunu **1 saniye** basılı tutarak kanal açılır.
-- Düşman seviyesi başına maksimum canın **%5'i** kadar iyileştirir (en fazla 5 seviye, yani %25).
-- Her ceset **bir kez** kullanılabilir.
-- Can 100'ü geçmez. Can doluyken cihaz çalışmaz ve ceset harcanmaz.
+### BETA Cihazı ve emilim
+
+- Taze bir cesedin yanında **F** ile kanal açılır. Kanal **0.85 sn** sürer, Kademe 4 ve üstünde **0.60 sn**.
+- Her ceset **bir kez** kullanılabilir. Kendiliğinden can dolumu yoktur.
+- Emilim, mevcut maksimum canı (aşağıdaki tabloda *M*) kalıcı olarak artırır, canı doldurur ve **Biyo-Öz** verir.
+- Maksimum can **100 ile başlar, en fazla 250** olur. Can tamamen doluyken de emilim yapılabilir. 250 sınırındayken maks can artmaz ama öz ve Overdrive yine verilir.
+- Her emilimden sonra **Overdrive** 5 sn açılır: hareket hızı ayrıca ×1.12.
+
+| Ceset seviyesi | Maks can artışı | İyileşme | Biyo-Öz |
+|---|---|---|---|
+| Lv1 | +4 | M × %12 + 4 | 15 |
+| Lv2 | +6 | M × %15 + 6 | 25 |
+| Lv3 | +9 | M × %18 + 9 | 40 |
+| Lv4 | +12 | M × %22 + 12 | 65 |
+| Lv5 / Volkov | +20 | M × %30 + 20 | 100 |
+
+Örnek: 50/100 HP iken Lv2 ceset → **71/106**. 60/100 HP iken Volkov → **110/120**.
+
+### BETA evrim kademeleri
+
+Toplanan Biyo-Öz kademeyi belirler. Kademe ve öz kat geçişlerinde korunur.
+
+| Kademe | Öz eşiği | Hasar | Şarjör hızı | Hareket | Ek |
+|---|---|---|---|---|---|
+| 1 | 0 | ×1.00 | ×1.00 | ×1.00 | – |
+| 2 | 45 | ×1.10 | ×1.12 | ×1.03 | – |
+| 3 | 120 | ×1.20 | ×1.20 | ×1.07 | – |
+| 4 | 230 | ×1.32 | ×1.28 | ×1.11 | Kanal 0.60 sn |
+| 5 | 370 | ×1.45 | ×1.35 | ×1.15 | Kanal 0.60 sn, **yakın dövüş öldürmesi +6 HP çalar** |
+
+### Zorluk
+
+| Ayar | Düşman canı | Düşman hasarı | Düşman hızı |
+|---|---|---|---|
+| **Normal** | ×1.00 | ×1.00 | ×1.00 |
+| **Bordo Bereli** | ×1.25 | ×1.30 | ×1.12 |
+
+Çarpanlar yeni doğan her düşmanın kendi istatistik kopyasına uygulanır. Paylaşılan `.tres` dosyaları değişmez.
+
+### Telsiz iletişimi
+
+General Demir ve Aydın, katlar boyunca sağ üstteki telsiz kutusundan konuşur: portre, konuşan adı ve metin. Mesajlar sıraya alınır ve süre dolunca kayarak kapanır. Kod tarafında tek çağrı yeterli:
+
+```gdscript
+GameManager.send_radio("GENERAL DEMİR", "general_portrait", "BETA hazır.", 6.0)
+```
+
+Portre `res://assets/portraits/<ad>.png` dosyasından yüklenir. Kutu görev plakası ve cephane paneliyle çakışmaz.
+
+### Ayarlar menüsü
+
+| Sekme | İçerik |
+|---|---|
+| **Oynanış** | Fare hassasiyeti, görüş açısı (FOV 75–120, varsayılan 100), zorluk (Normal / Bordo Bereli), kamera sarsıntısı |
+| **Görüntü & Performans** | Tam ekran, CRT/VHS filtresi, grafik kalitesi (**Düşük / Orta / Yüksek**), **VSync**, **FPS sayacı** |
+| **Ses** | Ana ses, müzik, efekt |
+| **Kontroller** | Tuş listesi |
+
+Grafik kalitesi: **Yüksek** glow efektini açar. **Düşük** Kat 5 yağmur parçacıklarını 160'tan 60'a düşürür. Tüm katlarda OmniLight3D ışıkları mesafeyle söner (16 m + 8 m). CRT filtresi nearest örnekleme kullanır. "Varsayılana Sıfırla" Normal / Orta / VSync açık / FPS kapalı değerlerine döner.
 
 ## Kontroller
 
@@ -147,7 +205,7 @@ Proje **Forward+** renderer kullanıyor (Vulkan destekli GPU gerekir). Tek bir k
 
 ## Testler
 
-22 kabul testi gerçek sahneleri ve fizik adımlarını kullanır. Komut satırından:
+28 kabul testi gerçek sahneleri ve fizik adımlarını kullanır. Komut satırından:
 
 ```bash
 godot --headless --audio-driver Dummy --path . --script res://tests/run_tests.gd
@@ -158,7 +216,7 @@ Windows'ta `godot` yerine kurulu Godot konsol exe'sinin yolunu yazın (`Godot_v4
 Beklenen çıktı ve çıkış kodu:
 
 ```
-==== BETA PROTOCOL ACCEPTANCE: 22/22 PASSED ====
+==== BETA PROTOCOL ACCEPTANCE: 28/28 PASSED ====
 ```
 
 Hepsi geçerse çıkış kodu `0`, değilse `1` olur. Testler kullanıcının ayar ve kayıt dosyalarını değiştirmez. Önceki kayıt varsa test sonunda geri yüklenir.
@@ -180,11 +238,17 @@ Testlerin kapsadığı alanlar:
 - Kat 2: devre kilidi ve Kat 3 çıkışı (17)
 - Kat 3: Lv3 ağır asker + Lv1 teknisyen, biyometrik kilit, Kat 4 çıkışı (18)
 - Kat 4: Lv4 komando + Lv2 paralı asker, sembol sıralama kilidi, Kat 5 çıkışı (19)
-- Kat 5: Volkov'un 3 aşaması, takviye dalgaları, +25 BETA, reaktör konsolu (20)
+- Kat 5: Volkov 800 HP ve 3 aşaması, takviye dalgaları, Lv5 emilimi 60/100 → 110/120, reaktör konsolu, yağmur ≤ 160 (20)
 - final sinematiği: epilog, atlama, özet kartı (21)
 - tam proje bütünlüğü: her `.tscn/.tres/.gdshader/.png/.wav/.gd` yüklenir, her sahne örneklenir (22)
+- BETA evrimi: öz eşikleri, Kademe 5 çarpanları, hızlı kanal, Overdrive, T5 can çalma, kat geçişinde aktarım (23)
+- Bordo Bereli zorluk çarpanları; paylaşılan `.tres` değişmez (24)
+- sprite boyutları: 17 silah 320×200, 3 kareli ölüm animasyonları, arka planlar 480×270, portreler 160×160 (25)
+- 1280×720'de sıfır çakışma UI denetimi: menüler, 4 ayar sekmesi, HUD, sinematikler, 4 bulmaca (26)
+- render/performans: CRT nearest filtre, kaliteye göre glow, 5 katta ışık mesafe sönümü (27)
+- Kat 1 ipucu bandı ve telsiz kutusu yerleşimi (28)
 
-Pencereli Forward+ görüntü kontrolü. Ekran görüntülerini işletim sisteminin temp klasörüne yazar ve `GameManager.quit_game()` ile kapanır:
+Pencereli Forward+ (Vulkan) görüntü kontrolü. Ana menü, ayarlar, Kat 1 HUD, Kat 3 telsiz, Kat 5 ve final sinematiğinin ekran görüntülerini `<temp>/beta_protocol_render_smoke/v030_*.png` olarak yazar, FPS ölçer ve `GameManager.quit_game()` ile kapanır:
 
 ```bash
 godot --path . --script res://tests/render_smoke.gd

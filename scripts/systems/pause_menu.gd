@@ -5,6 +5,8 @@ var previous_mouse_mode: Input.MouseMode = Input.MOUSE_MODE_CAPTURED
 var player: Node = null
 
 func _ready() -> void:
+	for button in buttons:
+		button.pressed.connect(func() -> void: AudioManager.play_sfx("sfx_puzzle_move", -16.0))
 	%Resume.pressed.connect(_resume)
 	%Restart.pressed.connect(_leave.bind(true))
 	%Menu.pressed.connect(_leave.bind(false))
@@ -41,13 +43,11 @@ func toggle_pause() -> bool:
 	return true
 
 func _open_settings() -> void:
-	for button in buttons:
-		button.focus_mode = Control.FOCUS_NONE
+	%PauseCard.hide()
 	%SettingsPanel.show()
 
 func _close_settings() -> void:
-	for button in buttons:
-		button.focus_mode = Control.FOCUS_ALL
+	%PauseCard.show()
 	%Settings.grab_focus()
 
 func _resume() -> void:

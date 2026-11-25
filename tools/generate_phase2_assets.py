@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from PIL import Image
 
-from generate_assets import Art, ENEMY_FRAMES, INK, gradient, material, panel, screws
+from generate_assets import Art, ENEMY_FRAMES, INK, death_pose, gradient, material, panel, screws, windup_halo
 
 
 @dataclass(frozen=True)
@@ -50,7 +50,7 @@ def armor_leg(a, suit, x, hip_y, foot_x, sole, width):
         (foot_x + width + 1, sole - 1))
 
 
-def heavy(a, suit, recoil, charged):
+def heavy(a, suit, recoil, charged, *, armed=True):
     dark, mid, light, edge = suit.armor
     green, enamel, stripe = suit.accent
     low, glow, hot = suit.power
@@ -90,10 +90,14 @@ def heavy(a, suit, recoil, charged):
     a.l(glow, (28, 18), (34, 17), (40, 18))
     a.r(hot, 33, 17, 35, 17)
     a.l(mid, (29, 25), (34, 26), (39, 24))
-    return cannon(a, suit, 47, 54 + recoil, charged, False)
+    a.l(edge, (38, 19), (40, 17))
+    if armed:
+        return cannon(a, suit, 47, 54 + recoil, charged, False)
+    a.p(mid, (45, 39), (51, 38), (55, 48), (54, 54), (48, 56), (43, 51), outline=INK)
+    a.l(light, (49, 40), (52, 46), (51, 52))
 
 
-def commando(a, suit, recoil, charged):
+def commando(a, suit, recoil, charged, *, armed=True):
     dark, mid, light, edge = suit.armor
     wine, red, scarlet = suit.accent
     gold, glow, hot = suit.power
@@ -113,7 +117,7 @@ def commando(a, suit, recoil, charged):
     a.l(red, (44, 29), (49, 32), (49, 42), (50, 57), (55, 64), width=2)
     a.l(gold, (23, 31), (30, 36), (35, 37), (43, 32))
     a.p(gold, (32, 35), (35, 34), (38, 36), (35, 40), outline=INK)
-    a.draw.point((35, 36), fill=hot)
+    a.point((35, 36), fill=hot)
     a.p(light, (24, 51), (31, 53), (39, 51), (39, 55), (31, 58), (25, 56), outline=INK)
     a.r(glow, 32, 54, 35, 55, outline=gold)
     a.p(wine, (20, 19), (21, 11), (27, 6), (38, 6), (45, 12), (46, 19), (41, 28),
@@ -125,13 +129,16 @@ def commando(a, suit, recoil, charged):
     a.p(mid, (36, 18), (41, 16), (44, 17), (43, 21), (38, 23), (36, 21), outline=INK)
     a.l(glow, (27, 19), (30, 18), (32, 19), width=2)
     a.l(glow, (38, 20), (41, 18))
-    a.draw.point((29, 19), fill=hot)
-    a.draw.point((41, 19), fill=hot)
+    a.point((29, 19), fill=hot)
+    a.point((41, 19), fill=hot)
     a.l(edge, (30, 24), (34, 26), (38, 25))
     y = 48 + recoil
     a.p(dark, (14, 39), (20, 38), (23, 44), (26, y - 2), (37, y - 4),
         (40, y + 1), (33, y + 5), (22, y + 7), (15, 49), outline=INK)
     a.l(light, (17, 43), (22, y + 3), (31, y + 1))
+    if not armed:
+        a.p(mid, (45, 41), (48, 40), (51, 48), (54, 52), (51, 57), (47, 55), (43, 48), outline=INK)
+        return None
     a.p(mid, (27, y - 4), (43, y - 6), (47, y - 4), (53, y - 4), (55, y - 2),
         (54, y + 2), (43, y + 2), (38, y + 8), (34, y + 7), (35, y + 3), (27, y + 3), outline=INK)
     a.l(light, (29, y - 3), (42, y - 5), (48, y - 3), (53, y - 3))
@@ -141,7 +148,7 @@ def commando(a, suit, recoil, charged):
     return 55, y - 1
 
 
-def volkov(a, suit, recoil, charged):
+def volkov(a, suit, recoil, charged, *, armed=True):
     dark, mid, light, edge = suit.armor
     wine, red, scarlet = suit.accent
     low, glow, hot = suit.power
@@ -196,7 +203,11 @@ def volkov(a, suit, recoil, charged):
     a.p(mid, (39, 28), (47, 31), (54, 31), (60, 26), (57, 32),
         (53, 35), (44, 34), outline=INK)
     a.l(light, (45, 32), (51, 33), (55, 31))
-    return cannon(a, suit, 72, 65 + recoil, charged, True)
+    if armed:
+        return cannon(a, suit, 72, 65 + recoil, charged, True)
+    a.p(mid, (68, 51), (76, 48), (82, 53), (87, 66), (84, 75), (77, 77),
+        (70, 70), (72, 62), outline=INK)
+    a.l(light, (77, 52), (81, 57), (83, 64), width=2)
 
 
 def cannon(a, suit, x, y, charged, boss):
@@ -234,20 +245,9 @@ def discharge(a, suit, x, y, pose, index, commando_suit):
     if pose == "hurt":
         for dx, dy in ((-29, -17), (-25, -13), (-18, -23), (-8, -17), (-3, -22)):
             a.l("#f35069", (x + dx, y + dy), (x + dx + 3, y + dy - 4))
-            a.draw.point((x + dx + 3, y + dy - 4), fill="#fed8ad")
+            a.point((x + dx + 3, y + dy - 4), fill="#fed8ad")
     elif pose == "windup":
-        radius = (10 + index * 4) if is_boss else 3 + index * 3
-        if commando_suit:
-            low = "#c23b4e"
-        for i in range(3 if is_boss else 2):
-            r = radius + i * 5
-            bounds = (x - r, y - r, min(width - 2, x + r), y + r)
-            a.draw.arc(bounds, 201 + i * 22, 342 + i * 19, fill=low)
-            a.draw.arc(bounds, 13 + i * 23, 105 + i * 20, fill=glow)
-        for dx, dy in ((-2, -1), (1, 1), (-1, 2), (-1, -2)):
-            start = min(width - 2, x + dx * radius // 3)
-            end = min(width - 2, x + dx * radius // 2)
-            a.l(glow, (start, y + dy * radius // 2), (end, y + dy * radius // 2 + dy))
+        windup_halo(a, (x, y), index)
         if is_boss:
             a.l(low, (8, 105), (22, 99), (51, 96), (70, 98), (88, 104))
             a.l(glow, (3, 111), (16, 107), (30, 106), (41, 104))
@@ -270,10 +270,10 @@ def discharge(a, suit, x, y, pose, index, commando_suit):
             (x + reach, y - 4), (x + 5, y + 1), (x + reach - 2, y + 5),
             (x + 2, y + 4), (x, y + 6))
         a.p(hot, (x - 2, y + 1), (x + 2, y - 2), (x + 7, y), (x + 2, y + 3))
-        a.draw.point((x + reach - 1, y - height - 1), fill=hot)
+        a.point((x + reach - 1, y - height - 1), fill=hot)
 
 
-def corpse(suit, enemy, drained):
+def corpse(suit, enemy, drained, *, charged=True):
     w, h = suit.size
     big = w == 96
     dark, mid, light, edge = suit.armor
@@ -313,12 +313,12 @@ def corpse(suit, enemy, drained):
         gray = a.image.convert("L").point(lambda value: (value * 3) // 4 + 8)
         ash = gray.point(lambda value: min(255, value + 4))
         a.image = Image.merge("RGBA", (gray, gray, ash, a.image.getchannel("A")))
-    else:
+    elif charged:
         a.l("#b52e58", (x - 7, y + 1), (x - 2, y - 5), (x + 1, y - 7), width=2)
         for dx, dy, r in ((0, -10, 2), (5, -17, 3), (-4, -20, 1), (-8, -13, 1), (12, -23, 1)):
             a.e((152, 20, 63, 125), x + dx - r - 2, y + dy - r - 2, x + dx + r + 2, y + dy + r + 2)
             a.e("#e13e62", x + dx - r, y + dy - r, x + dx + r, y + dy + r)
-            a.draw.point((x + dx, y + dy), fill="#ffc4a4")
+            a.point((x + dx, y + dy), fill="#ffc4a4")
     return a
 
 
@@ -327,6 +327,10 @@ def enemy_sprite(enemy, suit, body, frame):
     if pose == "corpse":
         return corpse(suit, enemy, number == "drained")
     index = int(number)
+    if pose == "death":
+        torso = Art(suit.size)
+        body(torso, suit, 7, False, armed=False)
+        return death_pose(torso, corpse(suit, enemy, False, charged=False), suit.armor, index)
     w, h = suit.size
     big = w == 96
     a = Art(suit.size)
@@ -349,7 +353,7 @@ def enemy_sprite(enemy, suit, body, frame):
 
 
 def portrait():
-    a = Art((64, 64))
+    a = Art((64, 64), density=2.5)
     gradient(a, (15, 19, 33), (91, 25, 53))
     a.dither("#b64059", 5, (0, 42), (63, 5), (63, 24), (0, 57))
     a.l("#7b324e", (0, 44), (63, 9))
@@ -384,7 +388,7 @@ def portrait():
     a.l("#e7c6ae", (29, 29), (34, 29), (37, 30))
     a.l("#ffd6b6", (43, 29), (46, 28))
     a.r("#567482", 33, 29, 34, 30)
-    a.draw.point((46, 28), fill="#7e5f64")
+    a.point((46, 28), fill="#7e5f64")
     a.p("#754856", (39, 31), (38, 35), (36, 38), (41, 40), (44, 38), (42, 35), (42, 32))
     a.l("#f9c4a5", (41, 31), (41, 35), (43, 38))
     a.l("#864e5b", (45, 20), (44, 24), (43, 26))
@@ -407,7 +411,7 @@ def portrait():
     a.l("#d4536f", (43, 60), (48, 51), (54, 45), (57, 40))
     a.l("#62b3d1", (20, 56), (24, 59), (26, 62))
     a.l("#722940", (51, 57), (57, 57), (62, 61), width=2)
-    a.save("portraits", "volkov_portrait", 2, True)
+    a.save("portraits", "volkov_portrait", opaque=True)
 
 
 def helicopter(a, x, y, small=False):
@@ -430,12 +434,12 @@ def helicopter(a, x, y, small=False):
     a.l("#1b2537", (x - width - 8, y - 8), (x - 1, y - 9), (x + width + 8, y - 8), width=2)
     a.l(edge, (x - width - 6, y - 9), (x - 3, y - 9))
     a.l("#181c2b", (x - width + 4, y + 7), (x + 5, y + 7), (x + 9, y + 5))
-    a.draw.point((x + 8, y + 3), fill="#f25d74")
-    a.draw.point((x - width + 3, y + 4), fill="#fff2bf")
+    a.point((x + 8, y + 3), fill="#f25d74")
+    a.point((x - width + 3, y + 4), fill="#fff2bf")
 
 
 def rooftop():
-    a = Art((160, 90))
+    a = Art((160, 90), density=3)
     rng = random.Random(113)
     gradient(a, (20, 24, 46), (72, 88, 115))
     a.p("#22273f", (0, 0), (159, 0), (159, 12), (140, 17), (102, 15),
@@ -456,7 +460,7 @@ def rooftop():
             for window_y in range(y + 3, 62, 4):
                 for window_x in range(x + 2, min(x + w, 160), 3):
                     if rng.random() < .31:
-                        a.draw.point((window_x, window_y), fill=rng.choice(("#977e79", "#687b8c", "#bf9b83")))
+                        a.point((window_x, window_y), fill=rng.choice(("#977e79", "#687b8c", "#bf9b83")))
             x += w + 1
     for x, y, far in ((131, 25, True), (48, 35, False)):
         source = x - (7 if far else 14)
@@ -492,16 +496,36 @@ def rooftop():
     a.l("#652e43", (100, 63), (101, 72))
     a.r("#7a5665", 100, 68, 101, 69)
     a.l("#8491a0", (71, 51), (75, 48), (85, 47), (92, 49))
-    for _ in range(113):
-        x, y = rng.randrange(160), rng.randrange(90)
-        if 58 < x < 113 and 45 < y < 85 and rng.random() < 0.78:
+
+    # Crisp 480x270 OVA stormy rooftop evacuation details.
+    hi = a.native()
+    # Spinning rotor blur lines & crisp helicopter strobes.
+    hi.l("#8ca0b5", (64, 78), (222, 78))
+    hi.l("#6d7f96", (332, 48), (446, 48))
+    hi.r("#ff5c77", 168, 114, 170, 116)
+    hi.r("#fff6cf", 98, 117, 100, 119)
+    hi.r("#ff5c77", 418, 84, 420, 86)
+    # Powered-down reactor dome metallic cooling ribs & dimming blue glow.
+    for ry in range(178, 224, 7):
+        hi.l("#223a52", (230, ry), (284, ry))
+        hi.l("#7cb4c4", (234, ry + 1), (256, ry + 1))
+    hi.l("#c2e4eb", (232, 212), (232, 176), (244, 166))
+    # Wet rooftop puddle sheen & helipad markings.
+    for px, py, pw in ((26, 232, 34), (96, 246, 42), (344, 242, 46), (408, 250, 32)):
+        hi.l("#7a8ea6", (px, py), (px + pw, py))
+        hi.l("#47556c", (px + 4, py + 2), (px + pw - 6, py + 2))
+    # Crisp 1px rain streaks across the 480x270 canvas.
+    for _ in range(250):
+        rx, ry = rng.randrange(480), rng.randrange(270)
+        if 176 < rx < 340 and 136 < ry < 256 and rng.random() < 0.72:
             continue
-        a.l(rng.choice(("#53647f", "#657690", "#8594a5")), (x, y), (x - 1, y + 2))
-    a.save("sprites/cutscenes", "bg_ending_rooftop", 2, True)
+        length = rng.choice((5, 8, 11))
+        hi.l(rng.choice(("#5b6d8a", "#7587a3", "#98a8bc")), (rx, ry), (rx - length // 3, ry + length))
+    a.save("sprites/cutscenes", "bg_ending_rooftop", opaque=True)
 
 
 def village():
-    a = Art((160, 90))
+    a = Art((160, 90), density=3)
     rng = random.Random(114)
     gradient(a, (62, 56, 94), (255, 174, 115))
     a.p("#d58a85", (0, 30), (22, 27), (35, 22), (53, 23), (74, 18), (96, 20),
@@ -554,17 +578,32 @@ def village():
     a.l("#7c5c6b", (87, 58), (91, 58))
     a.p("#494b42", (0, 81), (14, 75), (31, 76), (51, 81), (65, 89), (0, 89))
     a.p("#464b40", (121, 89), (136, 79), (159, 74), (159, 89))
-    for _ in range(104):
-        x, y = rng.randrange(160), rng.randrange(73, 90)
-        if 80 < x < 125 and x < 81 + (y - 73) * 3:
-            continue
-        a.draw.point((x, y), fill=rng.choice(("#91836a", "#7b735c", "#a98e67", "#525644")))
     for x, y, height in ((12, 79, 12), (15, 80, 8), (131, 79, 8), (141, 81, 11),
                          (150, 79, 16), (154, 80, 11), (23, 76, 6)):
         a.p("#364546", (x - 2, y), (x - 2, y - height // 2), (x, y - height),
             (x + 2, y - height // 2), (x + 2, y))
         a.l("#66704e", (x - 1, y - height + 3), (x - 1, y - 2))
-    a.save("sprites/cutscenes", "bg_ending_village", 2, True)
+
+    # Crisp 480x270 OVA golden sunrise valley details.
+    hi = a.native()
+    # Soaring morning bird silhouettes & subtle sunlit cloud rims.
+    hi.l("#ffe5b4", (18, 94), (66, 91), (156, 80), (208, 72))
+    hi.l("#ffecc2", (360, 58), (414, 52), (476, 42))
+    for bx, by in ((116, 46), (130, 52), (142, 43), (222, 62), (236, 56)):
+        hi.l("#6a4c67", (bx - 5, by + 1), (bx - 2, by - 2), (bx, by))
+        hi.l("#6a4c67", (bx, by), (bx + 2, by - 2), (bx + 5, by + 1))
+    # Chimney smoke wisps & crisp sunlit roof highlights.
+    for cx, cy in ((136, 173), (206, 170), (290, 176), (192, 198)):
+        hi.l("#f5ccb0", (cx, cy), (cx + 3, cy - 8), (cx + 1, cy - 16), (cx + 4, cy - 22))
+    hi.l("#ffe3b0", (266, 163), (266, 190))
+    # Crisp meadow grass blades, sunlit rim tips & wildflower flecks.
+    for _ in range(210):
+        gx, gy = rng.randrange(480), rng.randrange(222, 270)
+        if 240 < gx < 380 and gx < 244 + (gy - 220) * 3:
+            continue
+        color = rng.choice(("#9e9072", "#7d775d", "#cfa574", "#545b46", "#f2c280"))
+        hi.l(color, (gx, gy), (gx + rng.choice((-1, 0, 1)), gy - rng.randint(2, 5)))
+    a.save("sprites/cutscenes", "bg_ending_village", opaque=True)
 
 
 def save_tile(a, name):
@@ -676,7 +715,7 @@ def vip_textures():
             a.l("#563143", (x + 12, y + 44), (x + 12, y + 4), (x + 51, y + 4))
             for dx in (9, 52):
                 a.r("#a87144", x + dx, y + 5, x + dx + 2, y + 8)
-                a.draw.point((x + dx + 1, y + 6), fill="#f3c682")
+                a.point((x + dx + 1, y + 6), fill="#f3c682")
     a.l("#a97546", (0, 61), (127, 61))
     a.l("#4a2c35", (0, 62), (127, 62))
     a.l("#d3a56a", (0, 119), (127, 119))
@@ -690,7 +729,7 @@ def vip_textures():
         a.l("#b87c51", (0, y), (127, y))
         a.l("#e0b477", (0, y + 1), (127, y + 1))
         for x in range(2, 128, 8):
-            a.draw.point((x, y + 1), fill="#ffe1a3")
+            a.point((x, y + 1), fill="#ffe1a3")
     for x, y in ((31, 41), (95, 41), (31, 87), (95, 87)):
         a.p("#7e3142", (x, y - 12), (x + 8, y), (x, y + 12), (x - 8, y),
             outline="#ae754a")

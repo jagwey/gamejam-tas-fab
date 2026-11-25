@@ -15,6 +15,12 @@ var sfx_volume: float = 0.85
 var fullscreen: bool = false
 var camera_shake_enabled: bool = true
 var crt_enabled: bool = true
+## 0 = Düşük, 1 = Orta, 2 = Yüksek
+var graphics_quality: int = 1
+var vsync_enabled: bool = true
+var show_fps: bool = false
+## 0 = Normal, 1 = Bordo Bereli
+var difficulty: int = 0
 
 
 func _ready() -> void:
@@ -63,6 +69,63 @@ func set_crt_enabled(enabled: bool) -> void:
 	_commit()
 
 
+func set_graphics_quality(q: int) -> void:
+	graphics_quality = clampi(q, 0, 2)
+	apply_video_settings()
+	_commit()
+
+
+func set_vsync_enabled(enabled: bool) -> void:
+	vsync_enabled = enabled
+	apply_video_settings()
+	_commit()
+
+
+func set_show_fps(enabled: bool) -> void:
+	show_fps = enabled
+	_commit()
+
+
+func set_difficulty(d: int) -> void:
+	difficulty = clampi(d, 0, 1)
+	_commit()
+
+
+func get_difficulty_name() -> String:
+	return "Bordo Bereli (Zor)" if difficulty == 1 else "Normal"
+
+
+func get_enemy_hp_mult() -> float:
+	return 1.25 if difficulty == 1 else 1.0
+
+
+func get_enemy_damage_mult() -> float:
+	return 1.30 if difficulty == 1 else 1.0
+
+
+func get_enemy_speed_mult() -> float:
+	return 1.12 if difficulty == 1 else 1.0
+
+
+## VSync + 3D render scale. No-op on the headless display server.
+func apply_video_settings() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if vsync_enabled else DisplayServer.VSYNC_DISABLED)
+	if not is_inside_tree():
+		return
+	var vp: Viewport = get_viewport()
+	if vp != null:
+		vp.scaling_3d_scale = 0.80 if graphics_quality <= 0 else 1.0
+
+
+## Full-screen glow (bloom) only on High quality — big FPS win on Low/Medium.
+func apply_environment_quality(env: Environment) -> void:
+	if env == null:
+		return
+	env.glow_enabled = graphics_quality >= 2
+
+
 func save_settings() -> void:
 	var cfg: ConfigFile = ConfigFile.new()
 	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
@@ -70,6 +133,10 @@ func save_settings() -> void:
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.set_value("video", "camera_shake_enabled", camera_shake_enabled)
 	cfg.set_value("video", "crt_enabled", crt_enabled)
+	cfg.set_value("video", "graphics_quality", graphics_quality)
+	cfg.set_value("video", "vsync_enabled", vsync_enabled)
+	cfg.set_value("video", "show_fps", show_fps)
+	cfg.set_value("gameplay", "difficulty", difficulty)
 	cfg.set_value("audio", "master_volume", master_volume)
 	cfg.set_value("audio", "music_volume", music_volume)
 	cfg.set_value("audio", "sfx_volume", sfx_volume)
@@ -87,6 +154,10 @@ func load_settings() -> void:
 		fullscreen = bool(cfg.get_value("video", "fullscreen", fullscreen))
 		camera_shake_enabled = bool(cfg.get_value("video", "camera_shake_enabled", camera_shake_enabled))
 		crt_enabled = bool(cfg.get_value("video", "crt_enabled", crt_enabled))
+		graphics_quality = clampi(int(cfg.get_value("video", "graphics_quality", graphics_quality)), 0, 2)
+		vsync_enabled = bool(cfg.get_value("video", "vsync_enabled", vsync_enabled))
+		show_fps = bool(cfg.get_value("video", "show_fps", show_fps))
+		difficulty = clampi(int(cfg.get_value("gameplay", "difficulty", difficulty)), 0, 1)
 		master_volume = clampf(float(cfg.get_value("audio", "master_volume", master_volume)), 0.0, 1.0)
 		music_volume = clampf(float(cfg.get_value("audio", "music_volume", music_volume)), 0.0, 1.0)
 		sfx_volume = clampf(float(cfg.get_value("audio", "sfx_volume", sfx_volume)), 0.0, 1.0)
@@ -99,6 +170,7 @@ func apply_all() -> void:
 	_apply_bus("Music", music_volume)
 	_apply_bus("SFX", sfx_volume)
 	_apply_fullscreen()
+	apply_video_settings()
 
 
 func _commit() -> void:

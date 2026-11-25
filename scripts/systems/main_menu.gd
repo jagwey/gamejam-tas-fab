@@ -3,6 +3,8 @@ extends Control
 @onready var buttons: Array[Button] = [%NewGame, %Continue, %Settings, %Credits, %Quit]
 
 func _ready() -> void:
+	for button in buttons:
+		button.pressed.connect(func() -> void: AudioManager.play_sfx("sfx_puzzle_move", -16.0))
 	get_tree().paused = false
 	if DisplayServer.get_name() != "headless":
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -21,11 +23,9 @@ func _ready() -> void:
 	AudioManager.play_music("bgm_menu_cutscene")
 
 func _open_panel(panel: Control) -> void:
-	for button in buttons:
-		button.focus_mode = Control.FOCUS_NONE
+	%MenuCard.hide()
 	panel.show()
 
 func _restore_buttons(opener: Button) -> void:
-	for button in buttons:
-		button.focus_mode = Control.FOCUS_ALL
+	%MenuCard.show()
 	opener.grab_focus()

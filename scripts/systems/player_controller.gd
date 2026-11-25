@@ -8,6 +8,8 @@ signal interact_prompt_changed(visible_flag: bool, text: String)
 signal player_died
 signal pause_requested
 signal controls_enabled_changed(enabled: bool)
+## Fired for every hit that actually removed HP. source_pos is Vector3.INF when unknown.
+signal damage_taken_from(source_pos: Vector3, dealt: float)
 
 const WALK_SPEED: float = 8.5
 const SPRINT_SPEED: float = 12.5
@@ -29,6 +31,7 @@ const HEAD_LERP: float = 14.0
 const INTERACT_RANGE: float = 2.6
 const INTERACT_PROXIMITY: float = 1.5
 const INTERACT_MASK: int = 1 | 8
+const INTERACT_SCAN_INTERVAL: float = 0.06
 
 const HUD_SCENE: String = "res://scenes/ui/hud.tscn"
 const PAUSE_SCENE: String = "res://scenes/ui/pause_menu.tscn"
@@ -53,6 +56,9 @@ var _step_timer: float = 0.0
 var _prompt_visible: bool = false
 var _prompt_text: String = ""
 var _ads_held: bool = false
+var _interact_scan_timer: float = 0.0
+var _stand_box: BoxShape3D = null
+var _stand_params: PhysicsShapeQueryParameters3D = null
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var fps_camera: FpsCamera = $Head
@@ -70,6 +76,7 @@ func _ready() -> void:
 		# Own the shape so crouch resizing never touches a shared resource.
 		collision_shape.shape = (collision_shape.shape as CapsuleShape3D).duplicate() as CapsuleShape3D
 	_apply_capsule(STAND_HEIGHT)
+	_init_stand_query()
 	fps_camera.position.y = STAND_HEAD_Y
 	weapon_manager.setup(self, fps_camera, muzzle_light)
 	beta_device.setup(self, health_component)
@@ -95,12 +102,13 @@ func set_controls_enabled(enabled: bool) -> void:
 	controls_enabled_changed.emit(enabled)
 
 
-func apply_damage(amount: float) -> void:
+func apply_damage(amount: float, source_pos: Vector3 = Vector3.INF) -> void:
 	if health_component.is_dead:
 		return
 	var dealt: float = health_component.take_damage(amount)
 	if dealt <= 0.0:
 		return
+	damage_taken_from.emit(source_pos, dealt)
 	_sfx("sfx_player_hurt", 0.0, randf_range(0.95, 1.05))
 	if _shake_enabled():
 		fps_camera.add_trauma(clampf(0.25 + dealt * 0.02, 0.25, 0.7))
@@ -115,6 +123,7 @@ func export_state() -> Dictionary:
 		"health": health_component.current_health,
 		"max_health": health_component.max_health,
 		"weapons": weapon_manager.get_weapon_state_dict(),
+		"beta": beta_device.export_state(),
 	}
 
 
@@ -129,6 +138,9 @@ func import_state(d: Dictionary) -> void:
 	var w: Variant = d.get("weapons", {})
 	if w is Dictionary:
 		weapon_manager.apply_weapon_state_dict(w as Dictionary)
+	var b: Variant = d.get("beta", {})
+	if b is Dictionary:
+		beta_device.import_state(b as Dictionary)
 
 
 func attach_ui() -> void:
@@ -211,6 +223,7 @@ func _physics_process(delta: float) -> void:
 		speed = CROUCH_SPEED
 	elif is_sprinting:
 		speed = SPRINT_SPEED
+	speed *= beta_device.get_move_speed_multiplier()
 
 	var wish: Vector3 = global_basis * Vector3(input_vec.x, 0.0, input_vec.y)
 	wish.y = 0.0
@@ -251,7 +264,10 @@ func _physics_process(delta: float) -> void:
 	fps_camera.grounded = is_on_floor()
 	fps_camera.sprinting = is_sprinting and h_speed > WALK_SPEED * 0.8
 	_update_footsteps(delta, h_speed)
-	_update_interact_target()
+	_interact_scan_timer -= delta
+	if _interact_scan_timer <= 0.0:
+		_interact_scan_timer = INTERACT_SCAN_INTERVAL
+		_update_interact_target()
 
 
 func _handle_combat_input() -> void:
@@ -272,16 +288,23 @@ func _apply_capsule(height: float) -> void:
 	collision_shape.position = Vector3(0.0, height * 0.5, 0.0)
 
 
-func _can_stand() -> bool:
-	var box: BoxShape3D = BoxShape3D.new()
+## Ceiling-check shape/query are allocated once and reused every frame.
+func _init_stand_query() -> void:
 	var gap: float = STAND_HEIGHT - CROUCH_HEIGHT
-	box.size = Vector3(CAPSULE_RADIUS * 1.8, gap - 0.04, CAPSULE_RADIUS * 1.8)
-	var params: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
-	params.shape = box
-	params.collision_mask = 1
-	params.exclude = [get_rid()]
-	params.transform = Transform3D(Basis.IDENTITY, global_position + Vector3(0.0, CROUCH_HEIGHT + gap * 0.5 + 0.02, 0.0))
-	var hits: Array[Dictionary] = get_world_3d().direct_space_state.intersect_shape(params, 1)
+	_stand_box = BoxShape3D.new()
+	_stand_box.size = Vector3(CAPSULE_RADIUS * 1.8, gap - 0.04, CAPSULE_RADIUS * 1.8)
+	_stand_params = PhysicsShapeQueryParameters3D.new()
+	_stand_params.shape = _stand_box
+	_stand_params.collision_mask = 1
+	_stand_params.exclude = [get_rid()]
+
+
+func _can_stand() -> bool:
+	if _stand_params == null:
+		_init_stand_query()
+	var gap: float = STAND_HEIGHT - CROUCH_HEIGHT
+	_stand_params.transform = Transform3D(Basis.IDENTITY, global_position + Vector3(0.0, CROUCH_HEIGHT + gap * 0.5 + 0.02, 0.0))
+	var hits: Array[Dictionary] = get_world_3d().direct_space_state.intersect_shape(_stand_params, 1)
 	return hits.is_empty()
 
 
@@ -298,6 +321,8 @@ func _update_footsteps(delta: float, h_speed: float) -> void:
 # ------------------------------------------------------------------ interact
 
 func try_interact() -> bool:
+	# Refresh now: the per-frame scan is throttled, so the cached target may be up to one interval old.
+	_update_interact_target()
 	var target: Node = interact_target
 	if target == null or not is_instance_valid(target):
 		return false

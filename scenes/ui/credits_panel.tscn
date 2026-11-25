@@ -2,122 +2,70 @@
 
 [ext_resource type="Theme" path="res://scenes/ui/protocol_theme.tres" id="theme"]
 [sub_resource type="GDScript" id="code"]
-script/source = "extends Control\nsignal closed\nfunc _ready() -> void:\n\tvar path: String = \"res://assets/portraits/poster_key_art.jpg\"\n\tif ResourceLoader.exists(path):\n\t\t%Art.texture = load(path)\n\t%Back.pressed.connect(_close)\n\tvisibility_changed.connect(_on_visibility_changed)\n\nfunc _on_visibility_changed() -> void:\n\tif is_visible_in_tree():\n\t\t%Back.grab_focus()\n\nfunc _unhandled_input(event: InputEvent) -> void:\n\tif is_visible_in_tree() and event.is_action_pressed(\"pause\"):\n\t\tget_viewport().set_input_as_handled()\n\t\t_close()\n\nfunc _close() -> void:\n\thide()\n\tclosed.emit()\n"
+script/source = "extends Control\nsignal closed\nfunc _ready() -> void:\n\t%Back.pressed.connect(_close)\n\tvisibility_changed.connect(_on_visibility_changed)\n\nfunc _on_visibility_changed() -> void:\n\tif is_visible_in_tree():\n\t\t%Back.grab_focus()\n\nfunc _unhandled_input(event: InputEvent) -> void:\n\tif is_visible_in_tree() and event.is_action_pressed(\"pause\"):\n\t\tget_viewport().set_input_as_handled()\n\t\t_close()\n\nfunc _close() -> void:\n\tAudioManager.play_sfx(\"sfx_puzzle_move\", -16.0)\n\thide()\n\tclosed.emit()\n"
 
-[node name="CreditsPanel" type="Control" ]
+
+[node name="CreditsPanel" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 theme = ExtResource("theme")
 script = SubResource("code")
 
-[node name="Background" type="ColorRect" parent="." ]
+[node name="Shade" type="ColorRect" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-color = Color(0.028, 0.045, 0.062, 1)
+color = Color(0.029, 0.045, 0.064, 0.96)
 
-[node name="Art" type="TextureRect" parent="." ]
+[node name="Center" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="CreditsCard" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 600.0
-offset_bottom = 720.0
-mouse_filter = 2
-texture_filter = 1
-expand_mode = 1
-stretch_mode = 6
+custom_minimum_size = Vector2(590, 0)
 
-[node name="Seam" type="ColorRect" parent="." ]
-offset_left = 598.0
-offset_top = 0.0
-offset_right = 601.0
-offset_bottom = 720.0
-mouse_filter = 2
-color = Color(0.33, 0.93, 0.89, 1)
+[node name="Inset" type="MarginContainer" parent="Center/CreditsCard"]
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_bottom = 14
 
-[node name="Heading" type="Label" parent="." ]
+[node name="Body" type="VBoxContainer" parent="Center/CreditsCard/Inset"]
+theme_override_constants/separation = 12
+
+[node name="Heading" type="Label" parent="Center/CreditsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 658.0
-offset_top = 125.0
-offset_right = 1258.0
-offset_bottom = 199.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 45
 text = "GELİŞTİRİCİ EKİBİ"
-horizontal_alignment = 0
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 40
 
-[node name="Story" type="Label" parent="." ]
+[node name="Story" type="Label" parent="Center/CreditsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 661.0
-offset_top = 256.0
-offset_right = 1196.0
-offset_bottom = 288.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
 text = "HİKÂYE VE TASARIM"
-horizontal_alignment = 0
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
 
-[node name="Credit" type="Label" parent="." ]
+[node name="Credit" type="Label" parent="Center/CreditsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 661.0
-offset_top = 290.0
-offset_right = 1209.0
-offset_bottom = 338.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 31
 text = "BETA PROTOCOL ekibi"
-horizontal_alignment = 0
-vertical_alignment = 1
-
-[node name="Engine" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 661.0
-offset_top = 368.0
-offset_right = 1196.0
-offset_bottom = 400.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(0.33, 0.93, 0.89, 1)
-text = "OYUN MOTORU"
-horizontal_alignment = 0
-vertical_alignment = 1
-
-[node name="EngineName" type="Label" parent="." ]
-unique_name_in_owner = true
-offset_left = 661.0
-offset_top = 404.0
-offset_right = 1161.0
-offset_bottom = 444.0
-mouse_filter = 2
 theme_override_font_sizes/font_size = 26
+
+[node name="Engine" type="Label" parent="Center/CreditsCard/Inset/Body"]
+unique_name_in_owner = true
+text = "OYUN MOTORU"
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.329, 0.929, 0.890, 1)
+
+[node name="EngineName" type="Label" parent="Center/CreditsCard/Inset/Body"]
+unique_name_in_owner = true
 text = "Godot Engine 4.7"
-horizontal_alignment = 0
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 24
 
-[node name="Prototype" type="Label" parent="." ]
+[node name="Prototype" type="Label" parent="Center/CreditsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 661.0
-offset_top = 464.0
-offset_right = 1241.0
-offset_bottom = 541.0
-mouse_filter = 2
-theme_override_font_sizes/font_size = 21
-theme_override_colors/font_color = Color(0.63, 0.75, 0.76, 1)
-text = "Tasarım Fabrikası Game Jam için geliştirilen\ntek oyunculu retro FPS prototipi."
-horizontal_alignment = 0
-vertical_alignment = 1
+text = "Tasarım Fabrikası Game Jam için geliştirildi."
+theme_override_colors/font_color = Color(0.64, 0.76, 0.78, 1)
 
-[node name="Back" type="Button" parent="." ]
+[node name="Back" type="Button" parent="Center/CreditsCard/Inset/Body"]
 unique_name_in_owner = true
-offset_left = 660.0
-offset_top = 589.0
-offset_right = 920.0
-offset_bottom = 641.0
 text = "Geri"

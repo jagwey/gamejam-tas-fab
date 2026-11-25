@@ -7,6 +7,8 @@ signal damaged(amount: float)
 signal healed(amount: float)
 signal died
 
+const ABSOLUTE_MAX_HEALTH_CAP: float = 250.0
+
 @export var max_health: float = 100.0
 @export var current_health: float = 100.0
 var is_dead: bool = false
@@ -43,6 +45,19 @@ func heal(amount: float) -> float:
 	if gained > 0.0:
 		healed.emit(gained)
 		health_changed.emit(current_health, max_health)
+	return gained
+
+
+## Permanently raises max_health (capped at ABSOLUTE_MAX_HEALTH_CAP). Returns the max gained.
+func increase_max_health(bonus: float, heal_added: bool = true) -> float:
+	if is_dead or bonus <= 0.0:
+		return 0.0
+	var old_max: float = max_health
+	max_health = minf(max_health + bonus, ABSOLUTE_MAX_HEALTH_CAP)
+	var gained: float = maxf(max_health - old_max, 0.0)
+	if heal_added and gained > 0.0:
+		current_health = minf(current_health + gained, max_health)
+	health_changed.emit(current_health, max_health)
 	return gained
 
 
