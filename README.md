@@ -1,6 +1,6 @@
 # BETA PROTOCOL
 
-Tasarım Fabrikası Game Jam için Godot 4.7 ile yapılmış, retro-pixel dokulu bir birinci şahıs nişancı. Bu repo oyunun **v0.3.0** sürümünü içeriyor: 5 kat, 4 bulmaca, 3 aşamalı Viktor Volkov boss savaşı, final sinematiği, 5 kademeli BETA evrimi, iki zorluk seviyesi, telsiz iletişimi ve 4 sekmeli ayar menüsü.
+Tasarım Fabrikası Game Jam için Godot 4.7 ile yapılmış, retro-pixel dokulu bir birinci şahıs nişancı. Bu repo oyunun **v0.3.1** sürümünü içeriyor: 5 kat, 4 bulmaca, 3 aşamalı Viktor Volkov boss savaşı, final sinematiği, 5 kademeli BETA evrimi, iki zorluk seviyesi, telsiz iletişimi ve 4 sekmeli ayar menüsü.
 
 ## Hikâye
 
@@ -205,7 +205,7 @@ Proje **Forward+** renderer kullanıyor (Vulkan destekli GPU gerekir). Tek bir k
 
 ## Testler
 
-28 kabul testi gerçek sahneleri ve fizik adımlarını kullanır. Komut satırından:
+29 kabul testi gerçek sahneleri ve fizik adımlarını kullanır. Komut satırından:
 
 ```bash
 godot --headless --audio-driver Dummy --path . --script res://tests/run_tests.gd
@@ -216,7 +216,7 @@ Windows'ta `godot` yerine kurulu Godot konsol exe'sinin yolunu yazın (`Godot_v4
 Beklenen çıktı ve çıkış kodu:
 
 ```
-==== BETA PROTOCOL ACCEPTANCE: 28/28 PASSED ====
+==== BETA PROTOCOL ACCEPTANCE: 29/29 PASSED ====
 ```
 
 Hepsi geçerse çıkış kodu `0`, değilse `1` olur. Testler kullanıcının ayar ve kayıt dosyalarını değiştirmez. Önceki kayıt varsa test sonunda geri yüklenir.
@@ -247,6 +247,7 @@ Testlerin kapsadığı alanlar:
 - 1280×720'de sıfır çakışma UI denetimi: menüler, 4 ayar sekmesi, HUD, sinematikler, 4 bulmaca (26)
 - render/performans: CRT nearest filtre, kaliteye göre glow, 5 katta ışık mesafe sönümü (27)
 - Kat 1 ipucu bandı ve telsiz kutusu yerleşimi (28)
+- Gerçek `[E]` etkileşimi ile Kat 1 → Kat 2 → Kat 3 → Kat 4 → Kat 5 asansör geçişi ve durum aktarımı (29)
 
 Pencereli Forward+ (Vulkan) görüntü kontrolü. Ana menü, ayarlar, Kat 1 HUD, Kat 3 telsiz, Kat 5 ve final sinematiğinin ekran görüntülerini `<temp>/beta_protocol_render_smoke/v030_*.png` olarak yazar, FPS ölçer ve `GameManager.quit_game()` ile kapanır:
 

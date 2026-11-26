@@ -319,12 +319,15 @@ func _fire_shot() -> void:
 	_sfx("sfx_enemy_attack", -2.0, randf_range(0.95, 1.05))
 	if player == null or not is_inside_tree():
 		return
+	var world: World3D = get_world_3d()
+	if world == null:
+		return
 	var origin: Vector3 = global_position + Vector3(0.0, EYE_HEIGHT, 0.0)
 	var dir: Vector3 = (_aim_point - origin).normalized()
 	dir = _apply_spread(dir, stats.projectile_spread_deg)
 	var to: Vector3 = origin + dir * (stats.attack_range + 6.0)
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(origin, to, 1 | 2, [get_rid()])
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	var hit: Dictionary = world.direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return
 	var collider: Object = hit.get("collider") as Object
@@ -389,10 +392,13 @@ func _setup_corpse_area(enabled: bool) -> void:
 func has_line_of_sight() -> bool:
 	if player == null or not is_inside_tree():
 		return false
+	var world: World3D = get_world_3d()
+	if world == null:
+		return false
 	var origin: Vector3 = global_position + Vector3(0.0, EYE_HEIGHT, 0.0)
 	var target: Vector3 = player.global_position + Vector3(0.0, TARGET_HEIGHT, 0.0)
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(origin, target, 1, [get_rid()])
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	var hit: Dictionary = world.direct_space_state.intersect_ray(query)
 	return hit.is_empty()
 
 

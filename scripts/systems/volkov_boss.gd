@@ -124,6 +124,11 @@ func _fire_attack() -> void:
 	_fire_round()
 
 func _fire_round() -> void:
+	if not is_inside_tree():
+		return
+	var world: World3D = get_world_3d()
+	if world == null:
+		return
 	var origin := global_position + Vector3.UP * 1.7
 	var direction := origin.direction_to(_aim_point)
 	if _burst_phase == 2:
@@ -134,7 +139,7 @@ func _fire_round() -> void:
 	_sfx("sfx_enemy_attack", -5.0, 1.35 if _burst_phase == 3 else 0.9)
 	var endpoint := origin + direction * (stats.attack_range + 5.0)
 	var query := PhysicsRayQueryParameters3D.create(origin, endpoint, 1 | 2, [get_rid()])
-	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	var hit := world.direct_space_state.intersect_ray(query)
 	if not hit.is_empty():
 		endpoint = hit.position
 		var target := hit.collider as Node

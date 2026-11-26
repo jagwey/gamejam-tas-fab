@@ -19,7 +19,7 @@ const INTEGRITY_ROOTS: Array[String] = ["res://assets", "res://scenes", "res://s
 const INTEGRITY_EXTENSIONS: Array[String] = ["tscn", "tres", "gdshader", "png", "wav", "gd"]
 const MIN_PNG: int = 141
 const MIN_WAV: int = 31
-const TEST_COUNT: int = 28
+const TEST_COUNT: int = 29
 const CUTSCENE: String = "res://scenes/cutscenes/opening_cutscene.tscn"
 const PUZZLE: String = "res://scenes/puzzles/moving_lock_puzzle.tscn"
 const GUARD: String = "res://scenes/enemies/enemy_guard_lv1.tscn"
@@ -230,6 +230,7 @@ func _run() -> void:
 	await _t26_ui_overlap()
 	await _t27_render_performance()
 	await _t28_hint_and_radio()
+	await _t29_elevator_interact_transitions()
 
 	# Cleanup: test saves, settings, pause state, audio.
 	_sm().call("clear_save")
@@ -1536,4 +1537,48 @@ func _t28_hint_and_radio() -> void:
 		_check(ammo != null, "bottom-right AmmoPlate present")
 		if ammo != null:
 			_check(not r.intersects(ammo.get_global_rect()), "RadioBox vs AmmoPlate clear (%s / %s)" % [str(r), str(ammo.get_global_rect())])
+	_end()
+
+
+# ------------------------------------------------------------------ 29. elevator [E] transitions
+
+func _t29_elevator_interact_transitions() -> void:
+	_begin("29 Real [E] elevator transitions Floor 1->2->3->4->5 preserve carryover without tree/world errors")
+	var ok: bool = await _goto(FLOOR_1)
+	_check(ok, "floor_01 loaded")
+	if not ok:
+		_end()
+		return
+	var pl0: Node3D = _player()
+	var hc0: HealthComponent = _ap(pl0, "health_component") as HealthComponent
+	var wm0: WeaponManager = _ap(pl0, "weapon_manager") as WeaponManager
+	hc0.invulnerable = true
+	hc0.set_health(112.0, 118.0)
+	wm0.unlock_weapon("shotgun", false)
+	for floor_from in [1, 2, 3, 4]:
+		var pl: Node3D = _player()
+		var exit_node: Node3D = current_scene.get_node_or_null("Interactables/LevelExit") as Node3D if current_scene != null else null
+		_check(pl != null and exit_node != null, "floor %d has player and LevelExit" % floor_from)
+		if pl == null or exit_node == null:
+			break
+		_place_player(pl, exit_node.global_position + Vector3(0.0, 0.05, 0.5), 0.0)
+		await _physics(4)
+		var ev: InputEventAction = InputEventAction.new()
+		ev.action = "interact"
+		ev.pressed = true
+		root.push_input(ev)
+		var target_path: String = FLOORS[floor_from]
+		var arrived: bool = await _wait_scene(target_path)
+		_check(arrived, "elevator [E] moved floor %d -> %d" % [floor_from, floor_from + 1])
+		if not arrived:
+			break
+		var np: Node3D = _player()
+		if np != null:
+			var nhc: HealthComponent = _ap(np, "health_component") as HealthComponent
+			var nwm: WeaponManager = _ap(np, "weapon_manager") as WeaponManager
+			nhc.invulnerable = true
+			_check(is_equal_approx(nhc.max_health, 118.0) and is_equal_approx(nhc.current_health, 112.0),
+				"floor %d carryover HP 112/118 (got %.1f/%.1f)" % [floor_from + 1, nhc.current_health, nhc.max_health])
+			_check(nwm.is_unlocked("shotgun"), "floor %d shotgun unlock carried over" % (floor_from + 1))
+	_gm().set("player_carryover", {})
 	_end()

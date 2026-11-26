@@ -54,6 +54,7 @@ var floor_scenes: Dictionary = {
 var crt_layer: CanvasLayer = null
 var _floor_entry_carryover: Dictionary = {}
 var _pending_announce: bool = false
+var _pending_scene_path: String = ""
 var _quitting: bool = false
 
 
@@ -69,6 +70,8 @@ func _ready() -> void:
 		settings.connect("settings_changed", _on_settings_changed)
 	# Window close goes through quit_game() so audio playbacks are released cleanly.
 	tree.auto_accept_quit = false
+	if "--smoke-floors" in OS.get_cmdline_user_args():
+		_run_release_elevator_smoke.call_deferred()
 
 
 func _notification(what: int) -> void:
@@ -264,9 +267,73 @@ func _change_scene(path: String) -> void:
 	if not ResourceLoader.exists(path):
 		push_warning("GameManager: scene missing: %s" % path)
 		return
+	# Defer the swap so the caller (e.g. LevelExit inside PlayerController.try_interact)
+	# finishes its call stack before the active scene and player leave the SceneTree.
+	var needs_schedule: bool = _pending_scene_path.is_empty()
+	_pending_scene_path = path
+	if needs_schedule:
+		_apply_pending_scene_change.call_deferred()
+
+
+func _apply_pending_scene_change() -> void:
+	var path: String = _pending_scene_path
+	_pending_scene_path = ""
+	if path.is_empty() or not is_inside_tree():
+		return
 	var err: Error = get_tree().change_scene_to_file(path)
 	if err != OK:
 		push_warning("GameManager: change_scene failed (%d) for %s" % [err, path])
+
+
+## Release self-check invoked only with `-- --smoke-floors`: exercises real [E] elevator
+## transitions across Floors 1->2->3->4->5 inside the exported binary, then exits cleanly.
+func _run_release_elevator_smoke() -> void:
+	var tree: SceneTree = get_tree()
+	load_floor(1, false)
+	for floor_from in [1, 2, 3, 4]:
+		var target_path: String = str(floor_scenes[floor_from + 1])
+		for _w in 240:
+			await tree.process_frame
+			var cur: Node = tree.current_scene
+			if cur != null and cur.scene_file_path == str(floor_scenes[floor_from]) and cur.is_node_ready():
+				break
+		await tree.physics_frame
+		await tree.physics_frame
+		var pl: Node3D = tree.get_first_node_in_group("player") as Node3D
+		var exit_node: Node3D = tree.current_scene.get_node_or_null("Interactables/LevelExit") as Node3D if tree.current_scene != null else null
+		if pl != null and exit_node != null:
+			pl.global_position = exit_node.global_position + Vector3(0.0, 0.05, 0.6)
+			pl.rotation_degrees = Vector3.ZERO
+			await tree.physics_frame
+			await tree.physics_frame
+			var ev: InputEventAction = InputEventAction.new()
+			ev.action = "interact"
+			ev.pressed = true
+			tree.root.push_input(ev)
+		var arrived: bool = false
+		for _w in 240:
+			await tree.process_frame
+			var cur2: Node = tree.current_scene
+			if cur2 != null and cur2.scene_file_path == target_path and cur2.is_node_ready():
+				arrived = true
+				break
+		print("SMOKE_ELEVATOR %d->%d arrived=%s" % [floor_from, floor_from + 1, str(arrived)])
+		if not arrived:
+			tree.quit(1)
+			return
+	_change_scene(ENDING_SCENE)
+	var ending_ok: bool = false
+	for _w in 240:
+		await tree.process_frame
+		var cur3: Node = tree.current_scene
+		if cur3 != null and cur3.scene_file_path == ENDING_SCENE and cur3.is_node_ready():
+			ending_ok = true
+			break
+	print("SMOKE_ENDING arrived=%s" % str(ending_ok))
+	if not ending_ok:
+		tree.quit(1)
+		return
+	quit_game()
 
 
 func _on_scene_changed() -> void:

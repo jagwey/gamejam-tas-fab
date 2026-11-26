@@ -460,7 +460,10 @@ func _ray(from: Vector3, to: Vector3, mask: int) -> Dictionary:
 func _space() -> PhysicsDirectSpaceState3D:
 	if player == null or not player.is_inside_tree():
 		return null
-	return player.get_world_3d().direct_space_state
+	var world: World3D = player.get_world_3d()
+	if world == null:
+		return null
+	return world.direct_space_state
 
 
 func _exclude() -> Array[RID]:

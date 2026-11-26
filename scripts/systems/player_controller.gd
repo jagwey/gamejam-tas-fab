@@ -155,6 +155,8 @@ func attach_ui() -> void:
 # ------------------------------------------------------------------ input
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not is_inside_tree():
+		return
 	if event.is_action_pressed("pause"):
 		_handle_pause()
 		get_viewport().set_input_as_handled()
@@ -300,11 +302,16 @@ func _init_stand_query() -> void:
 
 
 func _can_stand() -> bool:
+	if not is_inside_tree():
+		return false
+	var world: World3D = get_world_3d()
+	if world == null:
+		return false
 	if _stand_params == null:
 		_init_stand_query()
 	var gap: float = STAND_HEIGHT - CROUCH_HEIGHT
 	_stand_params.transform = Transform3D(Basis.IDENTITY, global_position + Vector3(0.0, CROUCH_HEIGHT + gap * 0.5 + 0.02, 0.0))
-	var hits: Array[Dictionary] = get_world_3d().direct_space_state.intersect_shape(_stand_params, 1)
+	var hits: Array[Dictionary] = world.direct_space_state.intersect_shape(_stand_params, 1)
 	return hits.is_empty()
 
 
@@ -321,6 +328,8 @@ func _update_footsteps(delta: float, h_speed: float) -> void:
 # ------------------------------------------------------------------ interact
 
 func try_interact() -> bool:
+	if not is_inside_tree():
+		return false
 	# Refresh now: the per-frame scan is throttled, so the cached target may be up to one interval old.
 	_update_interact_target()
 	var target: Node = interact_target
@@ -328,12 +337,16 @@ func try_interact() -> bool:
 		return false
 	if target.has_method("interact"):
 		target.call("interact", self)
-		_update_interact_target()
+		if is_inside_tree():
+			_update_interact_target()
 		return true
 	return false
 
 
 func _update_interact_target() -> void:
+	if not is_inside_tree():
+		interact_target = null
+		return
 	var found: Node = null
 	if controls_enabled and not health_component.is_dead:
 		found = _ray_interactable()
@@ -350,22 +363,32 @@ func _update_interact_target() -> void:
 
 
 func _ray_interactable() -> Node:
+	if not is_inside_tree():
+		return null
+	var world: World3D = get_world_3d()
+	if world == null:
+		return null
 	var origin: Vector3 = fps_camera.get_aim_origin()
 	var dir: Vector3 = fps_camera.get_aim_direction()
 	var q: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(origin, origin + dir * INTERACT_RANGE, INTERACT_MASK, [get_rid()])
 	q.collide_with_areas = true
 	q.collide_with_bodies = true
-	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(q)
+	var hit: Dictionary = world.direct_space_state.intersect_ray(q)
 	if hit.is_empty():
 		return null
 	return _resolve_interactable(hit.get("collider") as Object)
 
 
 func _proximity_interactable() -> Node:
+	if not is_inside_tree():
+		return null
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		return null
 	var best: Node = null
 	var best_d: float = INTERACT_PROXIMITY
 	var fwd: Vector3 = -global_basis.z
-	for n in get_tree().get_nodes_in_group("interactables"):
+	for n in tree.get_nodes_in_group("interactables"):
 		if not (n is Node3D):
 			continue
 		var n3: Node3D = n as Node3D
